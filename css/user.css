@@ -1,0 +1,62 @@
+/* User CSS */
+
+.bright {
+    cursor: pointer;
+    font-family: icons;
+    font-weight: normal !important;
+    font-style: normal !important;
+    text-transform: none !important;
+    padding-right: 3px;
+    font-size: 7pt;
+}
+
+.bdown {
+    cursor: pointer;
+    font-family: icons;
+    font-weight: normal !important;
+    font-style: normal !important;
+    text-transform: none !important;
+    padding-right: 3px;
+    font-size: 7pt;
+}
+
+.btoggle {
+    cursor: default;
+    font-family: icons;
+    font-weight: normal !important;
+    font-style: normal !important;
+    text-transform: none !important;
+    padding-right: 3px;
+    font-size: 7pt;
+}
+
+ul {
+    font-size: 11pt;
+}
+
+dl {
+    font-size: 11pt;
+}
+
+h3 {
+    margin-top: 1em;
+}
+
+#searchbox {
+    position: absolute;
+    top: 1em;
+    right: 1em;
+}
+
+.uthumb {
+    border-width: 2px;
+    border-style: solid;
+    border-color: white;
+    margin-right: 4px;
+    border-radius: 2px;
+    margin-bottom: 0.5em;
+}
+
+.private {
+    border-color: #FF9999;
+}

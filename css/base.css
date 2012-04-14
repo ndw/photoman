@@ -1,0 +1,104 @@
+/* Base CSS */
+
+@font-face {
+    font-family: icons;
+    src: url('/local/fonts/fico.eot');
+    src: url('/local/fonts/fico.eot?#iefix') format('embedded-opentype'),
+         url('/local/fonts/fico.ttf') format('truetype'),
+         url('/local/fonts/fico.svg#Fico') format('svg');
+}
+
+a, a:visited {
+    color: white;
+}
+
+a.plain {
+    text-decoration: none;
+}
+
+a.plain:hover {
+    text-decoration: underline;
+}
+
+body {
+    color: white;
+    margin: 0;
+    padding: 0;
+    background-color: #617187;
+}
+
+.breadcrumbs {
+    font-family: Helvetica, Arial, sans-serif;
+}
+
+h1,h2,h3 {
+    font-family: Helvetica, Arial, sans-serif;
+    font-weight: normal;
+}
+
+h3 {
+    padding-top: 0px;
+    margin-top: 0px;
+    margin-after: 0.25em;
+    -webkit-margin-after: 0.25em;
+}
+
+.header {
+    font: normal normal 18px Georgia, Utopia, 'Palatino Linotype', Palatino, serif;
+    color: white;
+    padding-left: 2em;
+}
+
+.header h1 {
+    margin-bottom: 0px;
+}
+
+.content {
+    padding-left: 2em;
+    padding-right: 2em;
+}
+
+div.description {
+    width: 620px;
+    font-size: 12px;
+}
+
+#vresult {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    font-size: 24pt;
+    color: #FFFFAA;
+}
+
+.license {
+    font-size: 8pt;
+}
+
+ul {
+    font-size: 10pt;
+    list-style: none;
+    padding-left: 0;
+    margin-left: 0;
+    margin-before: 0px;
+    padding-before: 0px;
+    -webkit-margin-before: 0px;
+    -webkit-margin-after: 0px;
+}
+
+dl {
+    margin-before: 0px;
+    padding-before: 0px;
+    font-size: 10pt;
+    -webkit-margin-before: 0px;
+    -webkit-margin-after: 0px;
+}
+
+dd {
+    margin-start: 20px;
+    -webkit-margin-start: 20px;
+}
+
+.day0 {
+    color: #aaaaaa;
+}

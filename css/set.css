@@ -1,0 +1,82 @@
+/* Collections */
+
+.rows {
+   width: 600px;
+}
+
+.row {
+  display: -webkit-box;
+  display: -moz-box;
+  display: box;
+
+  -webkit-box-pack: justify;
+  -moz-box-pack: justify;
+  box-pack: justify;
+}
+
+.thumb {
+    padding: 0px;
+    border: 2px solid white;
+    margin: 4px;
+}
+
+.geo {
+    border-radius: 2px;
+}
+
+.private {
+    border-color: #FF9999;
+}
+
+.content {
+    position: relative;
+    width: 100%;
+}
+
+.photos {
+    position: absolute;
+    top: 0px;
+    left: 2em;
+}
+
+.sidebar {
+    position: absolute;
+    top: 0px;
+    left: 640px;
+    width: 360px;
+    padding-left: 1em;
+    border-left: 1px solid #aaaaaa;
+}
+
+.sidebar h3 {
+    padding-top: 0px;
+    margin-top: 0px;
+    margin-after: 0.25em;
+    -webkit-margin-after: 0.25em;
+}
+
+.sidebar > div {
+    margin-bottom: 1em;
+}
+
+.navigation {
+    font-family: sans-serif;
+    margin-bottom: 1em;
+}
+
+#map {
+    width: 380px;
+    height: 240px;
+}
+
+.infowindow a,
+.infowindow a:visited {
+    color: black;
+}
+
+.infowindow img {
+    border-radius: 4px;
+    width: 48px;
+    height: 48px;
+    vertical-align: top;
+}

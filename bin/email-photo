@@ -1,0 +1,184 @@
+#!/usr/bin/perl -- # --*-Perl-*--
+
+use strict;
+use English;
+use MIME::Parser;
+use Image::ExifTool;
+
+my $ROOT="/MarkLogic/photoman/photos";
+my $SIZE="/MarkLogic/photoman/bin/imgsize";
+my $UPLOAD="/MarkLogic/photoman/bin/upload.pl";
+
+my $parser = new MIME::Parser;
+$parser->output_under("/tmp");
+
+my $entity = $parser->parse(\*STDIN);
+
+report("parsed entity");
+
+#open (F, ">/tmp/mime-skeleton");
+#$entity->dump_skeleton(\*F);
+#close (F);
+
+# Ok, I expect the inbound message to be a multipart mixed with
+# a multipart/alternative part and an image/jpeg part...
+
+abort("Not multipart/mixed?")
+    unless $entity->mime_type() eq 'multipart/mixed';
+
+my @parts = $entity->parts();
+
+abort("Wrong number of parts?")
+    unless $#parts = 1;
+
+my $part1 = $entity->parts(0);
+my $part2 = $entity->parts(1);
+
+if ($part1->mime_type() eq 'multipart/alternative') {
+    abort("No image part, or wrong type")
+        unless $part2->mime_type() eq 'image/jpeg';
+    process($entity, $part1, $part2);
+} elsif ($part1->mime_type() eq 'image/jpeg') {
+    abort("No alternative part")
+        unless $part2->mime_type() eq 'multipart/alternative';
+    process($entity, $part2, $part1);
+} else {
+    abort("Didn't find correct parts");
+}
+
+exit 0;
+
+sub process {
+    my $entity = shift;
+    my $altpart = shift;
+    my $imgpart = shift;
+
+    report("processing entity");
+
+    my $imgbody = $imgpart->bodyhandle();
+    abort("No path to image?") unless $imgbody->path();
+
+    my $exif = new Image::ExifTool;
+    $exif->Options(IgnoreMinorErrors => '1');
+    $exif->ExtractInfo($imgbody->path());
+
+    my $head = $entity->head();
+    my $subject = $head->get("Subject");
+    chop($subject);
+
+    $exif->SetNewValue('Title', $subject);
+
+    my $txtpart = undef;
+    foreach my $part ($altpart->parts()) {
+        if ($part->mime_type() eq 'text/plain') {
+            abort("Multiple plain parts?")
+                if defined($txtpart);
+            $txtpart = $part;
+        }
+    }
+
+    abort("No plain part?") unless defined($txtpart);
+
+    my $collection = undef;
+    my $body = $txtpart->bodyhandle();
+    my $IO = $body->open("r");
+    while (defined($_ = $IO->getline())) {
+        chop;
+        if (/^tag:\s*/i) {
+            $_ = $POSTMATCH;
+            my @tags = split(/,\s*/, $_);
+            $exif->SetNewValue('Subject', \@tags);
+            $exif->SetNewValue('Keywords', \@tags);
+        }
+
+        if (/^set:\s*/i) {
+            $_ = $POSTMATCH;
+            s/\s+//sg;
+            $collection = $_;
+        }
+
+        if (/^loc:\s*/i || /^location:\s*/) {
+            $_ = $POSTMATCH;
+            my @places = split(/,\s*/, $_);
+            my $city = shift @places;
+            my $province = shift @places;
+            my $country = shift @places;
+            if (!defined($country)) {
+                $country = $province;
+                $province = undef;
+            }
+
+            $exif->SetNewValue("Country-PrimaryLocationName", $country)
+                if defined($country);
+            $exif->SetNewValue("Province-State", $province)
+                if defined($province);
+            $exif->SetNewValue("City", $city)
+                if defined($city);
+        }
+    }
+    $IO->close();
+
+    my $dir = $exif->GetValue("DateTimeOriginal")
+        || abort("No DateTimeOriginal tag?");
+
+    $dir =~ s/\s.+$//;
+    $dir =~ s/:/\//g;
+    $dir = $ROOT . "/$dir";
+
+    if (! -d $dir) {
+        system("mkdir -p $dir") && abort("Unable to mkdir $dir");
+    }
+
+    my $fn = $imgbody->path();
+    $fn =~ s/^.*(\/[^\/]+)$/$1/;
+    $fn = $dir . $fn;
+
+    my $orient = $exif->GetValue("Orientation");
+    if ($orient eq 'Rotate 90 CW') {
+        report("convert -rotate 90 " . $imgbody->path() . " $fn");
+        system("convert -rotate 90 " . $imgbody->path() . " $fn")
+            && abort("Unable to rotate to $fn");
+        $exif->SetNewValue("Orientation");
+    } elsif ($orient eq 'Rotate 270 CW' || $orient eq 'Rotate 90 CCW') {
+        report("convert -rotate 270 " . $imgbody->path() . " $fn");
+        system("convert -rotate 270 " . $imgbody->path() . " $fn")
+            && abort("Unable to rotate to $fn");
+        $exif->SetNewValue("Orientation");
+    } elsif ($orient eq 'Rotate 180') {
+        report("convert -rotate 180 " . $imgbody->path() . " $fn");
+        system("convert -rotate 180 " . $imgbody->path() . " $fn")
+            && abort("Unable to rotate to $fn");
+        $exif->SetNewValue("Orientation");
+    } else {
+        report("cp " . $imgbody->path() . " $fn");
+        system("cp " . $imgbody->path() . " $fn")
+            && abort("Unable to copy image to $fn");
+    }
+
+    $exif->WriteInfo($fn);
+
+    system ("perl $SIZE $dir >> /tmp/email-photo.log 2>&1") && "Resizing failed: $fn\n";
+    # Fix permissions!
+    report("fix dirs: " . "find $dir -type d -exec chmod 755 {} \\;");
+    system ("/usr/bin/find $dir -type d -exec chmod 755 {} \\;");
+    report("fix fns: " . "find $dir -type f -exec chmod 644 {} \\;");
+    system ("/usr/bin/find $dir -type f -exec chmod 644 {} \\;");
+
+    my $uargs = defined($collection) ? "-c \"$collection\" $fn" : $fn;
+    system ("perl $UPLOAD $uargs >> /tmp/email-photo.log 2>&1") && "Upload failed: $fn\n";
+}
+
+sub abort {
+    my $msg = shift;
+    open (F, ">>/tmp/email-photo.log");
+    print F "$msg\n";
+    close (F);
+    exit (1);
+}
+
+sub report {
+    my $msg = shift;
+    open (F, ">>/tmp/email-photo.log");
+    print F "$msg\n";
+    close (F);
+}

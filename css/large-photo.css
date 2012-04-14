@@ -1,0 +1,28 @@
+/* CSS for photo page */
+
+.header {
+    padding-left: 1em;
+}
+
+.content {
+    position: static;
+    width: 100%;
+    padding-left: 1em;
+}
+
+.photo {
+    position: static;
+    width: 100%;
+    margin-bottom: 1em;
+}
+
+.photo img {
+    border: 8px solid white;
+}
+
+.sidebar {
+    position: static;
+    border-left: none;
+    padding-left: 0px;
+    width: 100%;
+}

@@ -1,0 +1,68 @@
+/* CSS for photo page */
+
+.header {
+}
+
+.content {
+    position: relative;
+    width: 100%;
+}
+
+.photo {
+    position: absolute;
+    top: 4px;
+    left: 2em;
+}
+
+.photo img {
+    border-width: 8px;
+    border-style: solid;
+    border-color: white;
+    border-radius: 4px;
+    box-shadow: 5px 5px 10px #222222;
+}
+
+img.square {
+    border-width: 1px;
+    border-style: solid;
+    border-color: white;
+    margin-right: 4px;
+}
+
+img.private {
+    border-color: #FF9999;
+}
+
+.sidebar {
+    position: absolute;
+    top: 0px;
+    left: 580px;
+    width: 400px;
+    padding-left: 1em;
+    border-left: 1px solid #aaaaaa;
+}
+
+.sidebar > div {
+    margin-bottom: 1em;
+}
+
+a.deltag {
+    text-decoration: none;
+}
+
+#map {
+    width: 380px;
+    height: 200px;
+}
+
+.infowindow a,
+.infowindow a:visited {
+    color: black;
+}
+
+.infowindow img {
+    border-radius: 4px;
+    width: 48px;
+    height: 48px;
+    vertical-align: top;
+}
