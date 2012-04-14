@@ -266,7 +266,7 @@ return
                     { for $set in xdmp:document-get-collections(xdmp:node-uri($photo))
                       return
                         <li>
-                          <a href="/sets/{$photo/npl:user}/{$set}">
+                          <a href="/sets/{$set}">
                             { u:set-title($photo/npl:user, $set, false()) }
                           </a>
                         </li>
