@@ -1,16 +1,16 @@
 <sets>
    <set name="2012-03-austin"/>
    <set name="2012-caribbean"/>
-   <set name="2012-xmlprague"/>
+   <set name="2012-xml-prague"/>
    <set name="2012-02-england"/>
    <set name="2011-bright-lights"/>
    <set name="2011-snowpocalypse"/>
-   <set name="2011-vegas"/>
+   <set name="2011-las-vegas"/>
    <set name="2011-xml-summer-school"/>
-   <set name="2011-england"/>
-   <set name="2011-pub-signs"/>
+   <set name="2011-09-england"/>
+   <set name="2011-09-pubsigns"/>
    <set name="balisage-2011-dinner"/>
-   <set name="2012-balisage"/>
+   <set name="2011-balisage"/>
    <set name="river-cruise-2011">
       <set name="beaune-fr-july-2011"/>
       <set name="cluny-fr-july-2011"/>
@@ -56,9 +56,11 @@
      <set name="budapest-hu-november-2010"/>
      <set name="european-street-art-december-2010"/>
    </set>
+   <set name="games"/>
+   <set name="mobile"/>
+   <set name="dailyshoot"/>
    <set name="smith-college-chrysanthemum-show-november-2010"/>
    <set name="w3c-technical-plenary-2010-lyon-fr-november-2010"/>
-   <set name="dailyshoot"/>
    <set name="summer-2010-prints"/>
    <set name="stalham-and-london-gb-september-2010"/>
    <set name="xml-summer-school-oxford-gb-september-2010"/>
@@ -143,6 +145,7 @@
    <set name="japan-2003"/>
    <set name="calendar-2006"/>
    <set name="south-of-france-september-2000"/>
+   <set name="paris-fr-june-2000"/>
    <set name="1998-bangkok"/>
    <set name="1998-england"/>
    <set name="1998-paris"/>
