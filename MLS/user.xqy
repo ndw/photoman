@@ -137,7 +137,7 @@ return
 
       <div id="searchbox">
         <form action="/images/{$user}" method="get">
-          <label for="q">Search</label>: <input type="input" name="q" size="30" width="128"/>
+          <label for="q">Search</label>: <input type="input" name="q" size="50" width="128"/>
           <input type="submit" value="Go"/>
         </form>
       </div>
@@ -172,7 +172,8 @@ return
                                               $u:search-options))
                  return
                    <dt>
-                     <a class="plain" href="/sets/{$user}/{$set}">
+                     <span class="btoggle">{"&#160;"}</span>
+                     <a class="plain" href="/sets/{$set}">
                        { u:set-title($user, $set, false()) }
                      </a>
                      ({$count})
