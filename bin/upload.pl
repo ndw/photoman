@@ -5,12 +5,12 @@ use English;
 use LWP;
 use Cwd 'abs_path';
 use Getopt::Std;
-use vars qw($opt_c $opt_u $opt_s);
+use vars qw($opt_c $opt_u $opt_s $opt_D);
 use Digest::SHA qw(sha1_hex);
 
-my $usage = "$0 [-u user] [-c collection] [-s] imageDir\n";
+my $usage = "$0 [-D] [-u user] [-c collection] [-s] imageDir\n";
 
-die "Bad options\n$usage" if ! getopts('c:u:s');
+die "Bad options\n$usage" if ! getopts('c:Du:s');
 
 die "No image files or directory\n$usage" unless @ARGV;
 
@@ -19,15 +19,15 @@ my ($file, $UPLOADTS);
 my $collection = $opt_c;
 my $user = $opt_u || "ndw";
 my $skip = $opt_s;
+my $DEBUG = $opt_D;
 
 my $ua = new LWP::UserAgent;
 $ua->timeout(30);
 
 my $tmp = "/tmp/photoman-upload.$$.xml";
 
-my $BASE = abs_path($0);
-$BASE =~ s/\/bin\/.*$//;
-$BASE .= "/photos";
+# FIXME: This is instance-specific!
+my $BASE = "/MarkLogic/photoman/photos";
 
 foreach $file (@ARGV) {
     my $abs = abs_path($file);
@@ -48,7 +48,9 @@ sub upload {
         while (my $name = readdir(DIR)) {
             next if $name =~ /^\.\.?$/;
             my $path = $file . "/" . $name;
-            next if -d $path && ($name eq '64' || $name eq '150' || $name eq '500');
+            next if -d $path
+                && ($name eq '64' || $name eq '150' || $name eq '500' || $name eq '1024'
+                    || $name eq 'ORIG');
             push (@files, $path);
         }
         closedir (DIR);
@@ -67,11 +69,15 @@ sub upload {
         $square =~ s/^(.*)\/([^\/]+)$/$1\/64\/$2/;
 
         if (! -f $thumb || ! -f $small || ! -f $square) {
-            warn "Missing image: $file\n";
+            warn "Missing image: $thumb\n" if ! -f $thumb;
+            warn "Missing image: $small\n" if ! -f $small;
+            warn "Missing image: $square\n" if ! -f $square;
             return;
         }
 
-        system("exiftool -X --a $file > $tmp");
+        # Using --a here is tempting, but it is totally buggy
+        # We'll have to deal with duplicated fields in some other way...
+        system("exiftool -X $file > $tmp");
         my $xml = $file;
         $xml =~ s/\.jpe?g$/\.xml/;
 
@@ -100,6 +106,11 @@ sub post {
     $posturi .= "&uploadts=$UPLOADTS";
     $posturi .= "&collection=$collection" if defined($collection);
     $posturi .= "&skip=true" if defined($skip);
+
+    if ($DEBUG) {
+        print STDERR "POST $posturi\n";
+        return 200;
+    }
 
     my $req = new HTTP::Request($method => $posturi);
 
