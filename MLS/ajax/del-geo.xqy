@@ -33,6 +33,16 @@ return
        return
          xdmp:node-delete($elem),
        xdmp:set-response-code(200, "Ok"),
-       "Ok")
+      <html xmlns="http://www.w3.org/1999/xhtml">
+      <head>
+        <title>Geo deleted</title>
+        <meta http-equiv='refresh'
+              content="0;url={substring-before(xdmp:node-uri($photo), '.xml')}"/>
+      </head>
+      <body>
+      <h1>Location upated</h1>
+      <p>{xdmp:node-uri($photo)}</p>
+      </body>
+      </html>)
   else
     xdmp:set-response-code(403, "Forbidden")
