@@ -138,7 +138,9 @@ else
 
                      { if (exists($rdfD/ExifIFD:DateTimeOriginal))
                        then
-                         let $exifdt := string($rdfD/ExifIFD:DateTimeOriginal)
+                         (: Some cameras, at least some phones, produce duplicate tags.
+                            *Ugh* :)
+                         let $exifdt := string($rdfD/ExifIFD:DateTimeOriginal[1])
                          let $exifd  := translate(substring-before($exifdt, " "), ":", "-")
                          let $exift  := substring-after($exifdt, " ")
                          return
@@ -202,7 +204,6 @@ else
                      { let $icountry := upper-case($rdfD/IPTC:Country-PrimaryLocationName)
                        let $istate := $rdfD/IPTC:Province-State
                        let $icity := $rdfD/IPTC:City
-
                        let $country := $icountry
                        let $state   := if ($istate)
                                        then concat($istate,
