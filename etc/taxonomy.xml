@@ -1,11 +1,11 @@
 <tag name="taxonomy">
 <tag name="Airports">
 <tag name="BDL"/>
+<tag name="BOS"/>
+<tag name="DFW"/>
 <tag name="LHR"/>
 <tag name="ORD"/>
 <tag name="SFO"/>
-<tag name="STJ"/>
-<tag name="STT"/>
 </tag>
 <tag name="Geocaching">
 <tag name="GCK2YZ"/>
@@ -456,16 +456,17 @@
 <tag name="zarella-rendon"/>
 </tag>
 <tag name="places">
+<tag name="AG"/>
 <tag name="AT">
-<tag name="at-krems"/>
-<tag name="at-linz"/>
-<tag name="at-salzburg"/>
-<tag name="at-vienna"/>
+  <tag name="at-krems"/>
+  <tag name="at-linz"/>
+  <tag name="at-salzburg"/>
+  <tag name="at-vienna"/>
 </tag>
-<tag name="CT"/>
+<tag name="CH"/>
 <tag name="CZ">
-<tag name="cz-jihlava"/>
-<tag name="cz-prague"/>
+  <tag name="cz-jihlava"/>
+  <tag name="cz-prague"/>
 </tag>
 <tag name="EG">
 <tag name="Abu Simbel"/>
@@ -490,12 +491,16 @@
 <tag name="es-nerja"/>
 <tag name="es-peñarroyo-pueblonuevo"/>
 <tag name="es-ronda"/>
+<tag name="Ronda"/>
 <tag name="es-sevilla"/>
 </tag>
 <tag name="FR">
 <tag name="fr-arles"/>
+<tag name="Arles"/>
 <tag name="fr-avignon"/>
+<tag name="Avignon"/>
 <tag name="fr-beaune"/>
+<tag name="Beaune"/>
 <tag name="fr-cannes"/>
 <tag name="fr-chateauneuf-du-pape"/>
 <tag name="fr-cluny"/>
@@ -517,6 +522,8 @@
 <tag name="GB">
 <tag name="Acle"/>
 <tag name="gb-aylsham"/>
+<tag name="Aylsham"/>
+<tag name="Bristol"/>
 <tag name="gb-cromer"/>
 <tag name="gb-edinburgh"/>
 <tag name="gb-england"/>
@@ -526,7 +533,9 @@
 <tag name="gb-kelling"/>
 <tag name="gb-london"/>
 <tag name="gb-norfolk"/>
+<tag name="Norfolk"/>
 <tag name="gb-norwich"/>
+<tag name="Norwich"/>
 <tag name="gb-oxford"/>
 <tag name="gb-oxford-st-edmunds"/>
 <tag name="gb-salisbury"/>
@@ -546,8 +555,10 @@
 </tag>
 <tag name="IT">
 <tag name="it-naples"/>
+<tag name="Naples"/>
 <tag name="it-pompeii"/>
 <tag name="it-rome"/>
+<tag name="Rome"/>
 </tag>
 <tag name="JP">
 <tag name="jp-kamakura"/>
@@ -570,6 +581,10 @@
 <tag name="us-ca-san-francisco"/>
 <tag name="us-ca-santa-clara"/>
 </tag>
+<tag name="CT">
+<tag name="Hartford"/>
+<tag name="Norfolk"/>
+</tag>
 <tag name="FL">
 <tag name="us-fl-keywest"/>
 <tag name="us-fl-tampa"/>
@@ -577,14 +592,22 @@
 <tag name="GA">
 <tag name="us-ga-atlanta"/>
 </tag>
+<tag name="HI"/>
 <tag name="IL">
 <tag name="us-il-chicago"/>
+</tag>
+<tag name="LA">
+<tag name="New Orleans"/>
 </tag>
 <tag name="MA">
 <tag name="Amherst"/>
 <tag name="Belchertown"/>
 <tag name="Burlingame"/>
 <tag name="Burlington"/>
+<tag name="Boston"/>
+<tag name="Hadley"/>
+<tag name="Hatfield"/>
+<tag name="Northampton"/>
 <tag name="us-ma-amherst"/>
 <tag name="us-ma-belchertown"/>
 <tag name="us-ma-berkshires"/>
@@ -603,12 +626,14 @@
 <tag name="NY">
 <tag name="us-ny-dobbs-ferry"/>
 <tag name="us-ny-yorktown-heights"/>
+<tag name="New York"/>
 </tag>
 <tag name="RI">
 <tag name="us-ri-newport"/>
 </tag>
 <tag name="TX">
 <tag name="us-tx-austin"/>
+<tag name="Austin"/>
 </tag>
 <tag name="WA">
 <tag name="us-wa-bellevue"/>
@@ -661,4 +686,6 @@
 <tag name="wiki:Whirling_dervish"/>
 <tag name="wiki:Zakim_Bunker_Hill_Bridge"/>
 </tag>
+<tag name="STJ"/>
+<tag name="STT"/>
 </tag>

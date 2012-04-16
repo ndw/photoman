@@ -28,19 +28,17 @@
    </set>
    <set name="boston-ma-june-2011"/>
    <set name="summer-deck-2011"/>
-   <set name="marbella-es-may-2011"/>
-   <set name="nerja-es-may-2011"/>
    <set name="nikon-d7000"/>
    <set name="spain-2011">
-     <set name="gibraltar"/>
-     <set name="mijas-es-may-2011"/>
-     <set name="ronda-es-may-2011"/>
-     <set name="spain2print"/>
-     <set name="granada-es-and-gibraltar-may-2011"/>
-     <set name="cordoba-es-may-2011"/>
-     <set name="peñarroyo-pueblonuevo-es-may-2011"/>
-     <set name="spain2011reprints"/>
      <set name="sevilla-es-may-2011"/>
+     <set name="peñarroyo-pueblonuevo-es-may-2011"/>
+     <set name="cordoba-es-may-2011"/>
+     <set name="granada-es-and-gibraltar-may-2011"/>
+     <set name="ronda-es-may-2011"/>
+     <set name="nerja-es-may-2011"/>
+     <set name="mijas-es-may-2011"/>
+     <set name="marbella-es-may-2011"/>
+     <set name="gibraltar"/>
    </set>
    <set name="austin-tx-april-2011"/>
    <set name="england-march-2011"/>
