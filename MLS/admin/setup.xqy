@@ -78,7 +78,13 @@ then
      xdmp:document-insert(concat("/js/", $js),
           xdmp:document-get(concat($ROOT, "/js/", $js)),
           $permissions, ()),
-   "Uploaded images, CSS, JavaScript, and taxonomy."
+
+   for $font in ("Fico.otf","fico.eot","fico.svg","fico.ttf")
+   return
+     xdmp:document-insert(concat("/fonts/", $font),
+          xdmp:document-get(concat($ROOT, "/fonts/", $font)),
+          $permissions, ()),
+   "Uploaded images, CSS, JavaScript, Fonts, and taxonomy."
    )
 else
   xdmp:set-response-code(403, "Forbidden")
