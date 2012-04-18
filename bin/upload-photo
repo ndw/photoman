@@ -8,26 +8,27 @@ use Getopt::Std;
 use vars qw($opt_c $opt_u $opt_s $opt_D);
 use Digest::SHA qw(sha1_hex);
 
+my $DEFAULT_USER = "ndw";
+my $PHOTO_ROOT   = "/MarkLogic/photoman/photos";
+my $TMP_DIR      = "/tmp";
+
 my $usage = "$0 [-D] [-u user] [-c collection] [-s] imageDir\n";
-
 die "Bad options\n$usage" if ! getopts('c:Du:s');
-
 die "No image files or directory\n$usage" unless @ARGV;
 
-my ($file, $UPLOADTS);
-
 my $collection = $opt_c;
-my $user = $opt_u || "ndw";
+my $user = $opt_u || $DEFAULT_USER;
 my $skip = $opt_s;
 my $DEBUG = $opt_D;
+
+my $BASE = $PHOTO_ROOT;
+
+my ($file, $UPLOADTS);
 
 my $ua = new LWP::UserAgent;
 $ua->timeout(30);
 
-my $tmp = "/tmp/photoman-upload.$$.xml";
-
-# FIXME: This is instance-specific!
-my $BASE = "/MarkLogic/photoman/photos";
+my $tmp = "$TMP_DIR/photoman-upload.$$.xml";
 
 foreach $file (@ARGV) {
     my $abs = abs_path($file);
