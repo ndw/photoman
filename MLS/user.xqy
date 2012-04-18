@@ -283,7 +283,8 @@ return
                 return
                   <td align="center">
                     <a href="{$doc/@rdf:about}">
-                      <img src="{$doc/npl:images/npl:square/npl:image}" alt="[T]"/>
+                      <img src="{$doc/npl:images/npl:square/npl:image}" alt="[T]"
+                           class="uthumb"/>
                     </a>
                     <br/>
                     ({$value})
