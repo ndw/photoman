@@ -5,6 +5,13 @@ use English;
 use MIME::Parser;
 use Image::ExifTool;
 
+################################################################################
+#
+# NOTE: This can't possibly work until you edit it to suit your local
+# configuration. I run it with a procmail rule.
+#
+################################################################################
+
 my $ROOT="/MarkLogic/photoman/photos";
 my $SIZE="/MarkLogic/photoman/bin/imgsize";
 my $UPLOAD="/MarkLogic/photoman/bin/upload.pl";
@@ -133,29 +140,9 @@ sub process {
     $fn =~ s/^.*(\/[^\/]+)$/$1/;
     $fn = $dir . $fn;
 
-    my $orient = $exif->GetValue("Orientation");
-    if ($orient eq 'Rotate 90 CW') {
-        report("convert -rotate 90 " . $imgbody->path() . " $fn");
-        system("convert -rotate 90 " . $imgbody->path() . " $fn")
-            && abort("Unable to rotate to $fn");
-        $exif->SetNewValue("Orientation");
-    } elsif ($orient eq 'Rotate 270 CW' || $orient eq 'Rotate 90 CCW') {
-        report("convert -rotate 270 " . $imgbody->path() . " $fn");
-        system("convert -rotate 270 " . $imgbody->path() . " $fn")
-            && abort("Unable to rotate to $fn");
-        $exif->SetNewValue("Orientation");
-    } elsif ($orient eq 'Rotate 180') {
-        report("convert -rotate 180 " . $imgbody->path() . " $fn");
-        system("convert -rotate 180 " . $imgbody->path() . " $fn")
-            && abort("Unable to rotate to $fn");
-        $exif->SetNewValue("Orientation");
-    } else {
-        report("cp " . $imgbody->path() . " $fn");
-        system("cp " . $imgbody->path() . " $fn")
-            && abort("Unable to copy image to $fn");
-    }
-
-    $exif->WriteInfo($fn);
+    report("cp " . $imgbody->path() . " $fn");
+    system("cp " . $imgbody->path() . " $fn")
+        && abort("Unable to copy image to $fn");
 
     system ("perl $SIZE $dir >> /tmp/email-photo.log 2>&1") && "Resizing failed: $fn\n";
     # Fix permissions!
