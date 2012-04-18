@@ -3,7 +3,7 @@
 use strict;
 use English;
 use Getopt::Std;
-use Image::Info qw(image_info);
+use Image::ExifTool;
 
 my $usage = "Usage: $0 [dir]\n";
 
@@ -35,9 +35,23 @@ while (my $name = readdir(DIR)) {
     my $base = $name;
     $base =~ s/^(.*)\.[^\.]+$/\1/;
 
-    my $info = image_info($name);
-    my $width = $info->{'width'};
-    my $height = $info->{'height'};
+    my $exif = new Image::ExifTool;
+    $exif->Options(IgnoreMinorErrors => '1');
+    $exif->ExtractInfo($name);
+
+    my $width = $exif->GetValue('ImageWidth');
+    my $height = $exif->GetValue('ImageHeight');
+
+    my $rot = "";
+    my $orient = $exif->GetValue("Orientation");
+
+    if ($orient eq 'Rotate 90 CW') {
+        $rot = " -rotate 90";
+    } elsif ($orient eq 'Rotate 270 CW' || $orient eq 'Rotate 90 CCW') {
+        $rot = " -rotate 270";
+    } elsif ($orient eq 'Rotate 180') {
+        $rot = " -rotate 180";
+    }
 
     foreach my $size (@sizes) {
         my $maxwidth = $size;
@@ -82,8 +96,8 @@ while (my $name = readdir(DIR)) {
         }
 
         if (! -f "$size/$name") {
-            print "$name ($width,$height) => ($newwidth,$newheight)\n";
-            system "convert $crop -geometry ${newwidth}x${newheight} \"$name\" \"$size/$name\"";
+            print "$name ($width,$height)$rot => ($newwidth,$newheight)\n";
+            system "convert $crop$rot -geometry ${newwidth}x${newheight} \"$name\" \"$size/$name\"";
         }
     }
 
