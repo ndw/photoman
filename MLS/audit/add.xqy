@@ -13,17 +13,20 @@ declare variable $perms := (xdmp:permission("weblog-reader", "read"),
                             xdmp:permission("weblog-editor", "read"),
                             xdmp:permission("weblog-editor", "update"));
 
-declare function local:should-be-logged($uri as xs:string) as xs:boolean {
-  not(
-    (starts-with($uri, "/graphics/")
-     or starts-with($uri, "/fonts/")
-     or starts-with($uri, "/local/")
-     or ends-with($uri,".js")
-     or ends-with($uri,".css"))
-  )
+declare function local:should-be-logged($node as element(audit:http)) as xs:boolean {
+  let $uri := string($node/audit:uri)
+  return
+    not(
+      (starts-with($uri, "/graphics/")
+       or starts-with($uri, "/fonts/")
+       or starts-with($uri, "/local/")
+       or ends-with($uri,".js")
+       or ends-with($uri,".css")
+       or contains($node/audit:referrer, '//microwave:/'))
+    )
 };
 
-if (local:should-be-logged($node/audit:uri))
+if (local:should-be-logged($node))
 then
   let $docuri := format-dateTime(current-dateTime(), "/audit/[Y0001]-[M01]-[D01]/[H01].xml")
   let $lock   := xdmp:lock-for-update($docuri)
