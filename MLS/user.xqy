@@ -178,7 +178,7 @@ return
                      </a>
                      ({$count})
                    </dt>,
-                 f:show-sets($setxml/*/*))
+                 if ($setxml/*/*) then f:show-sets($setxml/*/*) else ())
             }
           </dl>
         </td>
