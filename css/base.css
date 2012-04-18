@@ -2,10 +2,10 @@
 
 @font-face {
     font-family: icons;
-    src: url('/local/fonts/fico.eot');
-    src: url('/local/fonts/fico.eot?#iefix') format('embedded-opentype'),
-         url('/local/fonts/fico.ttf') format('truetype'),
-         url('/local/fonts/fico.svg#Fico') format('svg');
+    src: url('/fonts/fico.eot');
+    src: url('/fonts/fico.eot?#iefix') format('embedded-opentype'),
+         url('/fonts/fico.ttf') format('truetype'),
+         url('/fonts/fico.svg#Fico') format('svg');
 }
 
 a, a:visited {
