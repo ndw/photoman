@@ -16,6 +16,8 @@ declare variable $perms := (xdmp:permission("weblog-reader", "read"),
 declare function local:should-be-logged($uri as xs:string) as xs:boolean {
   not(
     (starts-with($uri, "/graphics/")
+     or starts-with($uri, "/fonts/")
+     or starts-with($uri, "/local/")
      or ends-with($uri,".js")
      or ends-with($uri,".css"))
   )
