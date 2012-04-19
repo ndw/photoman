@@ -39,12 +39,15 @@ as empty-sequence()
   let $ext         := if (contains($filename, "."))
                       then replace($filename, "^.*\.([^\.]+)$", "$1")
                       else ""
+  let $querystr    := if (contains($uri, "?")) then substring-after($uri, "?") else ""
+  let $uri         := if (contains($uri, "?")) then substring-before($uri, "?") else $uri
 
   let $message
     := <http xmlns="http://nwalsh.com/ns/modules/photoman/audit">
          { if (empty($code)) then () else <code>{$code}</code> }
          <verb>{$verb}</verb>
          <uri>{$uri}</uri>
+         <querystring>{$querystr}</querystring>
          <dir>{$dir}</dir>
          <filename>{$filename}</filename>
          <ext>{$ext}</ext>

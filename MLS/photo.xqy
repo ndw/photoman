@@ -383,6 +383,22 @@ return
                   </p>
                 </div>
             }
+
+            { if (u:admin())
+              then
+                <div>
+                  <h3>Stats</h3>
+                  { xdmp:invoke("/stats.xqy",
+                         (QName("","uri"), substring-before(xdmp:node-uri($photo),".xml")),
+                         <options xmlns="xdmp:eval">
+                           <database>{xdmp:database("photoman-audit")}</database>
+                         </options>)
+                  }
+                </div>
+              else
+                ()
+            }
+
           </div>
         </div>
 
