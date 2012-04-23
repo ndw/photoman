@@ -388,8 +388,20 @@ return
               then
                 <div>
                   <h3>Stats</h3>
-                  { xdmp:invoke("/stats.xqy",
-                         (QName("","uri"), substring-before(xdmp:node-uri($photo),".xml")),
+                  { let $uris := if ($size = "large")
+                                 then
+                                   let $base := substring-before(
+                                                  substring-after(xdmp:node-uri($photo),$user),
+                                                  ".xml")
+                                   return
+                                     (concat("/images/", $user, "/small", $base, ".jpg"),
+                                      concat("/images/", $user, "/large", $base, ".jpg"))
+                                 else substring-before(xdmp:node-uri($photo),".xml")
+                    let $uris := <uris>{ for $uri in $uris
+                                         return <uri>{$uri}</uri> }</uris>
+                    return
+                      xdmp:invoke("/stats.xqy",
+                         (QName("","uris"), $uris),
                          <options xmlns="xdmp:eval">
                            <database>{xdmp:database("photoman-audit")}</database>
                          </options>)

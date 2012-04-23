@@ -292,6 +292,23 @@ return
               }
             </tr>
           </table>
+
+          { if (u:admin())
+            then
+              <div>
+                <h3>Stats</h3>
+                { let $uris := <uris><uri>/users/ndw</uri></uris>
+                  return
+                    xdmp:invoke("/stats.xqy",
+                       (QName("","uris"), $uris),
+                       <options xmlns="xdmp:eval">
+                         <database>{xdmp:database("photoman-audit")}</database>
+                       </options>)
+                }
+              </div>
+            else
+              ()
+          }
         </td>
       </tr>
     </table>

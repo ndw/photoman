@@ -11,7 +11,8 @@ declare namespace audit="http://nwalsh.com/ns/modules/photoman/audit";
 
 declare option xdmp:mapping "false";
 
-declare variable $uri as xs:string external;
+declare variable $uris as element() external;
+declare variable $urilist as xs:string+ := for $uri in $uris/* return string($uri);
 
 declare variable $search-options
   := <options xmlns="http://marklogic.com/appservices/search">
@@ -32,49 +33,49 @@ declare variable $search-options
        <constraint name="byday">
          <range type="xs:dateTime" facet="true">
            <element ns="http://nwalsh.com/ns/modules/photoman/audit" name="datetime"/>
-           <computed-bucket name="D1" ge="P0D"  lt="P1D" anchor="start-of-day"/>
-           <computed-bucket name="D2" ge="-P1D" lt="P0D" anchor="start-of-day"/>
-           <computed-bucket name="D3" ge="-P2D" lt="-P1D" anchor="start-of-day"/>
+           <computed-bucket name="D7" ge="P0D"  lt="P1D" anchor="start-of-day"/>
+           <computed-bucket name="D6" ge="-P1D" lt="P0D" anchor="start-of-day"/>
+           <computed-bucket name="D5" ge="-P2D" lt="-P1D" anchor="start-of-day"/>
            <computed-bucket name="D4" ge="-P3D" lt="-P2D" anchor="start-of-day"/>
-           <computed-bucket name="D5" ge="-P4D" lt="-P3D" anchor="start-of-day"/>
-           <computed-bucket name="D6" ge="-P5D" lt="-P4D" anchor="start-of-day"/>
-           <computed-bucket name="D7" ge="-P6D" lt="-P5D" anchor="start-of-day"/>
+           <computed-bucket name="D3" ge="-P4D" lt="-P3D" anchor="start-of-day"/>
+           <computed-bucket name="D2" ge="-P5D" lt="-P4D" anchor="start-of-day"/>
+           <computed-bucket name="D1" ge="-P6D" lt="-P5D" anchor="start-of-day"/>
          </range>
        </constraint>
        <constraint name="byhour">
          <range type="xs:dateTime" facet="true">
            <element ns="http://nwalsh.com/ns/modules/photoman/audit" name="datetime"/>
-           <computed-bucket name="H1" ge="-PT1H" lt="PT0H" anchor="start-of-day"/>
-           <computed-bucket name="H2" ge="-PT2H" lt="-PT1H" anchor="start-of-day"/>
-           <computed-bucket name="H3" ge="-PT3H" lt="-PT2H" anchor="start-of-day"/>
-           <computed-bucket name="H4" ge="-PT4H" lt="-PT3H" anchor="start-of-day"/>
-           <computed-bucket name="H5" ge="-PT5H" lt="-PT4H" anchor="start-of-day"/>
-           <computed-bucket name="H6" ge="-PT6H" lt="-PT5H" anchor="start-of-day"/>
-           <computed-bucket name="H7" ge="-PT7H" lt="-PT6H" anchor="start-of-day"/>
-           <computed-bucket name="H8" ge="-PT8H" lt="-PT7H" anchor="start-of-day"/>
-           <computed-bucket name="H9" ge="-PT9H" lt="-PT8H" anchor="start-of-day"/>
-           <computed-bucket name="H10" ge="-PT10H" lt="-PT9H" anchor="start-of-day"/>
-           <computed-bucket name="H11" ge="-PT11H" lt="-PT10H" anchor="start-of-day"/>
-           <computed-bucket name="H12" ge="-PT12H" lt="-PT11H" anchor="start-of-day"/>
-           <computed-bucket name="H13" ge="-PT13H" lt="-PT12H" anchor="start-of-day"/>
-           <computed-bucket name="H14" ge="-PT14H" lt="-PT13H" anchor="start-of-day"/>
-           <computed-bucket name="H15" ge="-PT15H" lt="-PT14H" anchor="start-of-day"/>
-           <computed-bucket name="H16" ge="-PT16H" lt="-PT15H" anchor="start-of-day"/>
-           <computed-bucket name="H17" ge="-PT17H" lt="-PT16H" anchor="start-of-day"/>
-           <computed-bucket name="H18" ge="-PT18H" lt="-PT17H" anchor="start-of-day"/>
-           <computed-bucket name="H19" ge="-PT19H" lt="-PT18H" anchor="start-of-day"/>
-           <computed-bucket name="H20" ge="-PT20H" lt="-PT19H" anchor="start-of-day"/>
-           <computed-bucket name="H21" ge="-PT21H" lt="-PT20H" anchor="start-of-day"/>
-           <computed-bucket name="H22" ge="-PT22H" lt="-PT21H" anchor="start-of-day"/>
-           <computed-bucket name="H23" ge="-PT23H" lt="-PT22H" anchor="start-of-day"/>
-           <computed-bucket name="H24" ge="-PT24H" lt="-PT23H" anchor="start-of-day"/>
+           <computed-bucket name="H24" ge="-PT1H" lt="PT0H" anchor="now"/>
+           <computed-bucket name="H23" ge="-PT2H" lt="-PT1H" anchor="now"/>
+           <computed-bucket name="H22" ge="-PT3H" lt="-PT2H" anchor="now"/>
+           <computed-bucket name="H21" ge="-PT4H" lt="-PT3H" anchor="now"/>
+           <computed-bucket name="H20" ge="-PT5H" lt="-PT4H" anchor="now"/>
+           <computed-bucket name="H19" ge="-PT6H" lt="-PT5H" anchor="now"/>
+           <computed-bucket name="H18" ge="-PT7H" lt="-PT6H" anchor="now"/>
+           <computed-bucket name="H17" ge="-PT8H" lt="-PT7H" anchor="now"/>
+           <computed-bucket name="H16" ge="-PT9H" lt="-PT8H" anchor="now"/>
+           <computed-bucket name="H15" ge="-PT10H" lt="-PT9H" anchor="now"/>
+           <computed-bucket name="H14" ge="-PT11H" lt="-PT10H" anchor="now"/>
+           <computed-bucket name="H13" ge="-PT12H" lt="-PT11H" anchor="now"/>
+           <computed-bucket name="H12" ge="-PT13H" lt="-PT12H" anchor="now"/>
+           <computed-bucket name="H11" ge="-PT14H" lt="-PT13H" anchor="now"/>
+           <computed-bucket name="H10" ge="-PT15H" lt="-PT14H" anchor="now"/>
+           <computed-bucket name="H9" ge="-PT16H" lt="-PT15H" anchor="now"/>
+           <computed-bucket name="H8" ge="-PT17H" lt="-PT16H" anchor="now"/>
+           <computed-bucket name="H7" ge="-PT18H" lt="-PT17H" anchor="now"/>
+           <computed-bucket name="H6" ge="-PT19H" lt="-PT18H" anchor="now"/>
+           <computed-bucket name="H5" ge="-PT20H" lt="-PT19H" anchor="now"/>
+           <computed-bucket name="H4" ge="-PT21H" lt="-PT20H" anchor="now"/>
+           <computed-bucket name="H3" ge="-PT22H" lt="-PT21H" anchor="now"/>
+           <computed-bucket name="H2" ge="-PT23H" lt="-PT22H" anchor="now"/>
+           <computed-bucket name="H1" ge="-PT24H" lt="-PT23H" anchor="now"/>
          </range>
        </constraint>
        <constraint name="referrer">
          <range type="xs:string" facet="true">
            <element ns="http://nwalsh.com/ns/modules/photoman/audit" name="referrer"/>
            <facet-option>frequency-order</facet-option>
-           <facet-option>limit=10</facet-option>
+           <facet-option>limit=20</facet-option>
          </range>
        </constraint>
        <constraint name="agent">
@@ -86,14 +87,12 @@ declare variable $search-options
        </constraint>
        <transform-results apply="empty-snippet"/>
        <page-length>1</page-length>
-       <debug>true</debug>
      </options>;
 
 let $now       := current-dateTime()
 let $curhour   := hours-from-dateTime($now)
 let $curmin    := minutes-from-dateTime($now)
 let $cursec    := seconds-from-dateTime($now)
-
 
 let $hour      := current-dateTime()
                   - xs:dayTimeDuration(concat("PT", $curmin, "M", $cursec, "S"))
@@ -114,7 +113,17 @@ let $last24h := for $count in reverse((0 to 24))
                 return
                   $endofhour - $dur
 
-let $results := search:search(concat("uri:""", $uri, """ code:200"), $search-options)
+let $results := if (count($urilist) = 1)
+                then
+                  search:search(concat("uri:""", $urilist, """ code:200"), $search-options)
+                else
+                  let $suri := for $uri in $urilist
+                               return
+                                 concat("uri:""", $uri, """")
+                  let $srch := concat("(", string-join($suri, " OR "), ") code:200")
+                  return
+                    search:search($srch, $search-options)
+
 let $byday   := $results/search:facet[@name="byday"]
 let $byhour  := $results/search:facet[@name="byhour"]
 
@@ -145,7 +154,7 @@ let $dgraphuri := string-join(
 
 let $hcount := for $hour in (1 to 24)
                let $name := concat("H", $hour)
-               return (xs:integer($byday/search:facet-value[@name=$name]/@count), 0)[1]
+               return (xs:integer($byhour/search:facet-value[@name=$name]/@count), 0)[1]
 
 let $hourlbl := string-join(for $pos in (1 to 24)
                             let $hour := hours-from-dateTime($last24h[$pos])
@@ -180,8 +189,9 @@ return
 <h4>Top referrers</h4>
 <ul>
 { for $ref in $results/search:facet[@name='referrer']/search:facet-value
+  where not(contains($ref/@name, '//microwave:70'))
   return
-    <li>{string($ref/@name)} ({string($ref/@count)})</li>
+    <li><a href="{string($ref/@name)}">{string($ref/@name)}</a> ({string($ref/@count)})</li>
 }
 </ul>
 <h4>Top agents</h4>
