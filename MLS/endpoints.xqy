@@ -17,7 +17,7 @@ declare variable $endpoints:ENDPOINTS as element(rest:options)
          <uri-param name="user">$2</uri-param>
        </request>
 
-       <request uri="^(/[^/]+\.gif|[^/]+\.png)$" endpoint="/serve.xqy" user-params="forbid">
+       <request uri="^(/[^/]+\.gif|/[^/]+\.png)$" endpoint="/serve.xqy" user-params="forbid">
          <uri-param name="uri">$1</uri-param>
        </request>
 
