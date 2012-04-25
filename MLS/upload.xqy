@@ -11,17 +11,20 @@ import module namespace u="http://nwalsh.com/ns/modules/utils"
 
 declare default function namespace "http://www.w3.org/2005/xpath-functions";
 
-declare namespace rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#";
-declare namespace XMP-dc="http://ns.exiftool.ca/XMP/XMP-dc/1.0/";
-declare namespace npl="http://nwalsh.com/ns/photolib";
-declare namespace f="http://nwalsh.com/ns/functions";
-declare namespace System="http://ns.exiftool.ca/File/System/1.0/";
-declare namespace Photoshop="http://ns.exiftool.ca/Photoshop/Photoshop/1.0/";
+declare namespace ExifIFD="http://ns.exiftool.ca/EXIF/ExifIFD/1.0/";
 declare namespace File="http://ns.exiftool.ca/File/1.0/";
 declare namespace GPS="http://ns.exiftool.ca/EXIF/GPS/1.0/";
-declare namespace geo="http://www.w3.org/2003/01/geo/wgs84_pos#";
-declare namespace ExifIFD="http://ns.exiftool.ca/EXIF/ExifIFD/1.0/";
+declare namespace IFD0="http://ns.exiftool.ca/EXIF/IFD0/1.0/";
 declare namespace IPTC="http://ns.exiftool.ca/IPTC/IPTC/1.0/";
+declare namespace Photoshop="http://ns.exiftool.ca/Photoshop/Photoshop/1.0/";
+declare namespace System="http://ns.exiftool.ca/File/System/1.0/";
+declare namespace XMP-dc="http://ns.exiftool.ca/XMP/XMP-dc/1.0/";
+declare namespace XMP-xmp="http://ns.exiftool.ca/XMP/XMP-xmp/1.0/";
+declare namespace XMP-xmpMM="http://ns.exiftool.ca/XMP/XMP-xmpMM/1.0/";
+declare namespace f="http://nwalsh.com/ns/functions";
+declare namespace geo="http://www.w3.org/2003/01/geo/wgs84_pos#";
+declare namespace npl="http://nwalsh.com/ns/photolib";
+declare namespace rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#";
 
 declare option xdmp:mapping "false";
 
@@ -136,18 +139,19 @@ else
                      { $ns }
                      <npl:user>{$user}</npl:user>
 
-                     { if (exists($rdfD/ExifIFD:DateTimeOriginal))
-                       then
-                         (: Some cameras, at least some phones, produce duplicate tags.
-                            *Ugh* :)
-                         let $exifdt := string($rdfD/ExifIFD:DateTimeOriginal[1])
+                     { let $date := ($rdfD/ExifIFD:DateTimeOriginal,
+                                     $rdfD/IFD0:ModifyDate,
+                                     $rdfD/XMP-xmp:ModifyDate,
+                                     $rdfD/XMP-xmp:MetadataDate,
+                                     $rdfD/System:FileModifyDate)[1]
+                       where exists($date)
+                       return
+                         let $exifdt := string($date)
                          let $exifd  := translate(substring-before($exifdt, " "), ":", "-")
                          let $exift  := substring-after($exifdt, " ")
                          return
                            (<npl:date>{ $exifd }</npl:date>,
                             <npl:datetime>{ concat($exifd, "T", $exift) }</npl:datetime>)
-                       else
-                         ()
                      }
 
                      { let $tags := if ($rdfD/XMP-dc:Subject/rdf:Bag)
