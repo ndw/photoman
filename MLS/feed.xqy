@@ -187,7 +187,7 @@ return
                   }
                   { if (exists($photo/IFD0:Model))
                     then
-                      concat(" with a ", $photo/IFD0:Model, ".")
+                      concat(" with a ", ($photo/IFD0:Model)[1], ".")
                     else
                       "."
                   }
