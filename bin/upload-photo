@@ -9,7 +9,7 @@ use vars qw($opt_c $opt_u $opt_s $opt_D);
 use Digest::SHA qw(sha1_hex);
 
 my $DEFAULT_USER = "ndw";
-my $PHOTO_ROOT   = "/MarkLogic/photoman/photos";
+my $PHOTO_ROOT   = "/Volumes/Data/MarkLogic/photoman/photos";
 my $TMP_DIR      = "/tmp";
 
 my $usage = "$0 [-D] [-u user] [-c collection] [-s] imageDir\n";
@@ -33,7 +33,6 @@ my $tmp = "$TMP_DIR/photoman-upload.$$.xml";
 foreach $file (@ARGV) {
     my $abs = abs_path($file);
     die "Bad filename: $file\n$usage" unless $abs =~ /^\//;
-
     $UPLOADTS = time();
     upload($abs);
 }

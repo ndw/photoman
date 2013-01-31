@@ -1,0 +1,103 @@
+#!/usr/bin/perl -- # --*-Perl-*--
+
+use strict;
+use English;
+use Getopt::Std;
+use Image::ExifTool;
+
+my $ROOT = "/tmp/x/photos";
+my %SIZE = ( "square" => { "maxwidth" => 64, "maxheight" => 64 },
+             "thumb"  => { "maxheight" => 150 },
+             "small"  => { "maxwidth" => 500 },
+             "large"  => { "maxwidth" => 1024 } );
+
+my $uri = shift @ARGV || "/square/2012/08/20/IMG_20120820_190341.jpg";
+
+$uri =~ s/[^a-zA-Z0-9\/\._]/_/g;
+
+my $size = undef;
+my $photo = undef;
+
+if ($uri =~ /^\/([^\/]+)\/(.*)$/) {
+    $size = $1;
+    $photo = "$ROOT/ORIG/$2";
+
+    die "Bad URI: ($size) $uri\n" unless exists $SIZE{$size};
+    die "Bad URI: $uri\n" unless -f $photo;
+} else {
+    die "Bad URI: $uri\n";
+}
+
+my $exif = new Image::ExifTool;
+$exif->Options(IgnoreMinorErrors => '1');
+$exif->ExtractInfo($photo);
+
+my $width = $exif->GetValue('ImageWidth');
+my $height = $exif->GetValue('ImageHeight');
+
+my $rot = "";
+my $orient = $exif->GetValue("Orientation");
+
+if ($orient eq 'Rotate 90 CW') {
+    $rot = " -rotate 90";
+} elsif ($orient eq 'Rotate 270 CW' || $orient eq 'Rotate 90 CCW') {
+    $rot = " -rotate 270";
+} elsif ($orient eq 'Rotate 180') {
+    $rot = " -rotate 180";
+}
+
+print "$width, $height, $rot\n";
+
+my $maxwidth = $SIZE{$size}->{"maxwidth"};
+my $maxheight = $SIZE{$size}->{"maxheight"};
+my $crop = "";
+
+print "$maxwidth, $maxheight\n";
+
+my $scale = 1.0;
+my $newwidth = $width;
+my $newheight = $height;
+
+if (defined($maxheight)) {
+    $scale = $maxheight / $height;
+    $newwidth = int(($width * $scale) + 0.5);
+    $newheight = int(($height * $scale) + 0.5);
+}
+
+if (defined($maxwidth)) {
+    $scale = $maxwidth / $width;
+    $newwidth = int(($width * $scale) + 0.5);
+    $newheight = int(($height * $scale) + 0.5);
+}
+
+if (defined($maxheight) && defined($maxwidth)) {
+    my $wscale = $maxwidth / $width;
+    my $hscale = $maxheight / $height;
+    $scale = $wscale > $hscale ? $wscale : $hscale;
+    $newwidth = int(($width * $scale) + 0.5);
+    $newheight = int(($height * $scale) + 0.5);
+}
+
+if (defined($maxwidth) && ($newwidth > $maxwidth)) {
+    $crop = int(($width - $height) / 2);
+    $newwidth = $maxwidth;
+    $crop = "-crop ${height}x${height}+${crop}+0";
+}
+
+if (defined($maxheight) && ($newheight > $maxheight)) {
+    $crop = int(($height - $width) / 2);
+    $newheight = $maxheight;
+    $crop = "-crop ${width}x${width}+0+${crop}";
+}
+
+print "$newwidth, $newheight, $crop\n";
+
+my $outdir = "$ROOT$uri";
+$outdir =~ s/\/[^\/]+$//;
+
+print "$outdir\n";
+
+system("mkdir -p $outdir");
+
+system "convert $crop$rot -geometry ${newwidth}x${newheight} \"$photo\" \"$ROOT$uri\"";
+

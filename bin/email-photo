@@ -14,7 +14,7 @@ use Image::ExifTool;
 
 my $ROOT="/MarkLogic/photoman/photos";
 my $SIZE="/MarkLogic/photoman/bin/imgsize";
-my $UPLOAD="/MarkLogic/photoman/bin/upload.pl";
+my $UPLOAD="/MarkLogic/photoman/bin/upload-photo";
 
 my $parser = new MIME::Parser;
 $parser->output_under("/tmp");
@@ -146,8 +146,8 @@ sub process {
 
     system ("perl $SIZE $dir >> /tmp/email-photo.log 2>&1") && "Resizing failed: $fn\n";
     # Fix permissions!
-    report("fix dirs: " . "find $dir -type d -exec chmod 755 {} \\;");
-    system ("/usr/bin/find $dir -type d -exec chmod 755 {} \\;");
+    report("fix dirs: " . "find $ROOT -type d -exec chmod 755 {} \\;");
+    system ("/usr/bin/find $ROOT -type d -exec chmod 755 {} \\;");
     report("fix fns: " . "find $dir -type f -exec chmod 644 {} \\;");
     system ("/usr/bin/find $dir -type f -exec chmod 644 {} \\;");
 
