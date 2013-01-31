@@ -296,7 +296,7 @@ return
                        { for $set in $sets
                          return
                            <li>
-                             <a href="{f:patch-uri('set', string($set/@name))}"
+                             <a href="/sets/{$set}"
                                 class="plain">
                                { u:set-title($user, $set/@name, false()) }
                              </a>
