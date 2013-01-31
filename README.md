@@ -1,3 +1,9 @@
+# S3 Branch - a work in progress
+
+I'm developing the `s3` branch in order to move the actual images onto Amazon
+S3. External binaries work great in MarkLogic, but bandwidth for my server
+is a bit ... weak. :-/
+
 # Photo manager
 
 This project is a photo management application built on top of
