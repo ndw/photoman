@@ -68,16 +68,57 @@ declare function f:show-taxonomy(
        ())
 };
 
+declare function f:show-taxonomy-cloud(
+  $tags as element()+
+)
+{
+  for $tag in $tags
+  let $names := $tag//@name/string()
+  let $evq   := cts:element-value-query($tagname, $names, ("exact"))
+  let $count := xdmp:estimate(cts:search(/rdf:Description, cts:and-query(($evq,$userq))))
+  where $count > 1
+  order by u:tag-title($user, $tag/@name, false())
+  return
+    (<a class="plain" href="/tags/{$user}/{encode-for-uri($tag/@name)}">
+       { u:tag-title($user, $tag/@name) }
+     </a>,
+     concat(" (", $count, "), "),
+     if ($tag/*) then f:show-taxonomy-cloud($tag/*) else ())
+};
+
+declare function f:set-count(
+  $set as element()
+) as xs:integer
+{
+  (: FIXME: Onl handles two levels of nesting ... :)
+  let $count
+    := if ($set/*)
+       then
+         sum((for $set in $set/*
+              return
+                search:estimate(
+                       search:parse(concat("user:", $user,
+                                           " collection:""",
+                                           concat($user, "/", $set/@name),
+                                           """"),
+                                    $u:search-options))))
+       else
+         search:estimate(
+                search:parse(concat("user:", $user,
+                                    " collection:""", concat($user, "/", $set/@name), """"),
+                             $u:search-options))
+  return
+    $count
+};
+
 declare function f:show-sets(
   $sets as element()+
 )
 {
   for $set in $sets
   let $name := concat($user, "/", $set/@name)
-  let $count := search:estimate(
-                       search:parse(concat("user:", $user,
-                                           " collection:""", $name, """"),
-                                           $u:search-options))
+  let $count := f:set-count($set)
+  where $count > 0
   return
     (<dt xmlns="http://www.w3.org/1999/xhtml">
        { if (count($set/*) > 4)
@@ -155,7 +196,7 @@ return
     <div class="content">
     <table width="100%" border="0">
       <tr>
-        <td valign="top" width="25%" rowspan="2">
+        <td valign="top" width="50%">
           <h3>Sets</h3>
           <dl>
             { let $setxml := doc(concat("/etc/", $user, "/sets.xml"))
@@ -183,6 +224,7 @@ return
           </dl>
         </td>
 
+{(:
         { let $taxonomy := doc(concat("/etc/", $user, "/taxonomy.xml"))/*
           let $tags := cts:element-values($tagname, (), ("collation=http://marklogic.com/collation/codepoint"), $userq)
           return
@@ -197,6 +239,7 @@ return
                 </dl>
               </td>
         }
+:)}
 
         <td valign="top" width="25%">
           <h3>Locations</h3>
@@ -253,7 +296,7 @@ return
             }
           </dl>
         </td>
-        <td valign="top" width="70" rowspan="2">
+        <td valign="top" width="70" rowspan="3">
           <h3>Recent</h3>
           { for $result in $search/search:result[1 to 40]
             let $photo := doc($result/@uri)/*
@@ -272,6 +315,7 @@ return
       </tr>
 
       <tr>
+        <td>&#160;</td>
         <td colspan="2" valign="top">
           <h3 style="margin-top: 1em;">Popular</h3>
           <table>
@@ -292,7 +336,25 @@ return
               }
             </tr>
           </table>
+        </td>
+      </tr>
 
+{(:
+      <tr>
+        <td colspan="3">
+          <h3>Tags</h3>
+          { let $taxonomy := doc(concat("/etc/", $user, "/taxonomy.xml"))/*
+            let $tags := cts:element-values($tagname, (), ("collation=http://marklogic.com/collation/codepoint"), $userq)
+            return
+              <div>{f:show-taxonomy-cloud($taxonomy/*)}</div>
+          }
+        </td>
+      </tr>
+:)}
+
+      <tr>
+        <td>&#160;</td>
+        <td colspan="2">
           { if (u:admin())
             then
               <div>
