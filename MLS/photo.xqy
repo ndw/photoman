@@ -9,9 +9,6 @@ import module namespace endpoints="http://nwalsh.com/ns/photoends"
 import module namespace u="http://nwalsh.com/ns/modules/utils"
        at "utils.xqy";
 
-import module namespace u-amped="http://nwalsh.com/ns/modules/photoman/amped"
-       at "/nwalsh/photoman/amped.xqy";
-
 declare namespace f="http://nwalsh.com/ns/functions";
 declare namespace npl="http://nwalsh.com/ns/photolib";
 declare namespace XMP-dc="http://ns.exiftool.ca/XMP/XMP-dc/1.0/";
@@ -28,7 +25,12 @@ declare default function namespace "http://www.w3.org/2005/xpath-functions";
 declare option xdmp:mapping "false";
 
 let $params   := rest:process-request(endpoints:request("/photo.xqy"))
-let $uri      := concat(map:get($params, "uri"), ".xml")
+let $uri      := map:get($params, "uri")
+let $xml      := map:get($params, "xml")
+
+let $xml      := if (ends-with($uri, ".xml")) then "rdf" else $xml
+let $uri      := if (ends-with($uri, ".xml")) then $uri else concat($uri, ".xml")
+
 let $size     := map:get($params, "size")
 let $set      := map:get($params, "set")
 let $tags     := map:get($params, "tag")
@@ -36,7 +38,6 @@ let $user     := map:get($params, "userid")
 let $country  := map:get($params, "country")
 let $province := map:get($params, "province")
 let $city     := map:get($params, "city")
-let $xml      := map:get($params, "xml")
 let $photo    := doc($uri)/*
 let $lat      := $photo/geo:lat
 let $lng      := $photo/geo:long
@@ -165,17 +166,7 @@ return
                     </form>
                   </div>
               else
-                let $realip := xdmp:get-request-header("x-real-ip")
-                let $ipaddr := if (empty($realip))
-                               then xdmp:get-request-client-address()
-                               else $realip
-                let $localhost := "127.0.0.1"
-                return
-                  if ($ipaddr = $localhost or starts-with($ipaddr, "192.168.1."))
-                  then
-                    ()
-                  else
-                    u-amped:update-views($photo)
+                ()
             }
 
             { if (exists($set))

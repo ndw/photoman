@@ -622,11 +622,11 @@ declare function utils:views(
   $photo as element(rdf:Description)
 ) as xs:integer
 {
-  if (empty($photo/npl:views/npl:total))
-  then
-    1
-  else
-    xs:integer($photo/npl:views/npl:total) + 1
+  xdmp:invoke("/views.xqy",
+    (QName("","uri"), xdmp:node-uri($photo)),
+    <options xmlns="xdmp:eval">
+      <database>{xdmp:database("photoman-audit")}</database>
+    </options>)
 };
 
 declare function utils:set-title(
