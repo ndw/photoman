@@ -22,6 +22,7 @@ let $value  := map:get($params, "value")
 let $user   := substring-before($uri, "/")
 let $tag    := substring-after($uri, "/")
 let $uri    := concat("/metadata/", $user, "/tags/", $tag, ".xml")
+let $perm   := xdmp:permission("weblog-reader", "read")
 return
   if (u:admin())
   then
@@ -31,7 +32,8 @@ return
                             <npl:metadata>
                                <npl:title>{$value}</npl:title>
                                <npl:description></npl:description>
-                            </npl:metadata>)
+                            </npl:metadata>,
+                            $perm)
      else
        xdmp:node-replace(doc($uri)/npl:metadata/npl:title, <npl:title>{$value}</npl:title>),
      xdmp:set-response-code(200, "Ok"),
