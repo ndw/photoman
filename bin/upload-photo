@@ -1,109 +1,222 @@
-#!/usr/bin/perl -- # -*- Perl -*-
+#!/usr/bin/perl -- # --*-Perl-*--
 
 use strict;
 use English;
-use LWP;
-use Cwd 'abs_path';
 use Getopt::Std;
-use vars qw($opt_c $opt_u $opt_s $opt_D);
-use Digest::SHA qw(sha1_hex);
+use Image::ExifTool;
+use LWP;
+use Net::Amazon::S3;
+use Net::Amazon::S3::Client;
+use POSIX qw(strftime);
+use vars qw($opt_D $opt_r $opt_c);
 
-my $DEFAULT_USER = "ndw";
-my $PHOTO_ROOT   = "/Volumes/Data/MarkLogic/photoman/photos";
-my $TMP_DIR      = "/tmp";
+my $usage = "Usage: $0 [-D] [-r] [-c collection] images\n";
 
-my $usage = "$0 [-D] [-u user] [-c collection] [-s] imageDir\n";
-die "Bad options\n$usage" if ! getopts('c:Du:s');
-die "No image files or directory\n$usage" unless @ARGV;
+die $usage if ! getopts('Drc:');
 
-my $collection = $opt_c;
-my $user = $opt_u || $DEFAULT_USER;
-my $skip = $opt_s;
 my $DEBUG = $opt_D;
-
-my $BASE = $PHOTO_ROOT;
-
-my ($file, $UPLOADTS);
+my $REPLACE = $opt_r;
+my $collection = $opt_c;
 
 my $ua = new LWP::UserAgent;
 $ua->timeout(30);
 
-my $tmp = "$TMP_DIR/photoman-upload.$$.xml";
-
-foreach $file (@ARGV) {
-    my $abs = abs_path($file);
-    die "Bad filename: $file\n$usage" unless $abs =~ /^\//;
-    $UPLOADTS = time();
-    upload($abs);
+my %config = ();
+open (F, $ENV{'HOME'} . '/.amazon');
+while (<F>) {
+    chop;
+    $config{$1} = $2 if /(\S+?)\s*=\s*(.*?)\s*$/;
 }
+close (F);
 
-unlink $tmp;
+die 'Incomplete configuration\n'
+    unless (exists $config{'aws-access-key-id'}
+            && exists $config{'aws-secret-access-key'}
+            && exists $config{'photoman-bucket'}
+            && exists $config{'uri-root'} );
 
-sub upload {
-    my $file = shift;
-    chop $file if $file =~ /\/$/;
-    if (-d $file) {
-        my @files = ();
-        opendir (DIR, $file);
-        while (my $name = readdir(DIR)) {
-            next if $name =~ /^\.\.?$/;
-            my $path = $file . "/" . $name;
-            next if -d $path
-                && ($name eq '64' || $name eq '150' || $name eq '500' || $name eq '1024'
-                    || $name eq 'ORIG');
-            push (@files, $path);
-        }
-        closedir (DIR);
-        foreach my $file (@files) {
-            upload($file);
-        }
-    } else {
-        my $baseuri = substr($file, length($BASE)+1);
-        $baseuri =~ s/\.[^\.]+$//;
+my $uri_root = $config{'uri-root'};
+my $PHOTOMAN_BUCKET = $config{'photoman-bucket'};
+my $tmpfile = "/tmp/photoman.$$.jpg";
 
-        my $thumb = $file;
-        $thumb =~ s/^(.*)\/([^\/]+)$/$1\/150\/$2/;
-        my $small = $file;
-        $small =~ s/^(.*)\/([^\/]+)$/$1\/500\/$2/;
-        my $square = $file;
-        $square =~ s/^(.*)\/([^\/]+)$/$1\/64\/$2/;
+my $bucket = {};
 
-        if (! -f $thumb || ! -f $small || ! -f $square) {
-            warn "Missing image: $thumb\n" if ! -f $thumb;
-            warn "Missing image: $small\n" if ! -f $small;
-            warn "Missing image: $square\n" if ! -f $square;
-            return;
-        }
+if (!$DEBUG) {
+    my $s3 = Net::Amazon::S3->new(
+        'aws_access_key_id'     => $config{'aws-access-key-id'},
+        'aws_secret_access_key' => $config{'aws-secret-access-key'},
+        'retry'                 => 1
+        );
 
-        # Using --a here is tempting, but it is totally buggy
-        # We'll have to deal with duplicated fields in some other way...
-        system("exiftool -X $file > $tmp");
-        my $xml = $file;
-        $xml =~ s/\.jpe?g$/\.xml/;
+    my $client = Net::Amazon::S3::Client->new( s3 => $s3 );
 
-        my $rc = post($tmp, "/images/$user/$baseuri.xml");
-        if ($rc == 200) {
-            post($file, "/images/$user/large/$baseuri.jpg");
-            post($thumb, "/images/$user/thumb/$baseuri.jpg");
-            post($small, "/images/$user/small/$baseuri.jpg");
-            post($square, "/images/$user/square/$baseuri.jpg");
+    # Let's make sure we can find the photoman bucket...
+    $bucket = undef;
+    foreach my $sbucket ($client->buckets()) {
+        if ($sbucket->name() eq $PHOTOMAN_BUCKET) {
+            $bucket = $sbucket;
+            last;
         }
     }
+
+    die "Cannot find bucket: $PHOTOMAN_BUCKET\n" unless defined $bucket;
+    $bucket = $s3->bucket($PHOTOMAN_BUCKET);
+}
+
+die "You must specify at least one image.\n" unless @ARGV;
+
+for my $image (@ARGV) {
+    my $exif = new Image::ExifTool;
+    $exif->Options(IgnoreMinorErrors => '1');
+    $exif->ExtractInfo($image);
+
+    my $width = $exif->GetValue('ImageWidth');
+    my $height = $exif->GetValue('ImageHeight');
+
+    my $rot = "";
+    my $orient = $exif->GetValue("Orientation");
+
+    if ($orient eq 'Rotate 90 CW') {
+        $rot = " -rotate 90";
+    } elsif ($orient eq 'Rotate 270 CW' || $orient eq 'Rotate 90 CCW') {
+        $rot = " -rotate 270";
+    } elsif ($orient eq 'Rotate 180') {
+        $rot = " -rotate 180";
+    }
+
+    my $rc = "some defined value";
+
+    print "$image\n";
+
+    # Let's see if we can figure out the date/time this picture was taken
+    # Use the current date/time if we can't find one in the EXIF
+    my @dto_list = ( $exif->GetValue("DateCreated", 'ValueConv'),
+                     $exif->GetValue("CreateDate", 'ValueConv'),
+                     $exif->GetValue("DateTimeOriginal", 'ValueConv'),
+                     strftime("%Y:%m:%d %H:%M:%S", localtime()) );
+    my $dto = $dto_list[0];
+
+    die "Cannot parse date/time: $dto\n"
+        unless $dto =~ /^(\d\d\d\d):(\d\d):(\d\d) (\d\d):(\d\d):(\d\d)(\.(\d+))?$/;
+
+    my $filename = "$1$2$3-$4$5$6-$8.jpg";
+    my $path = "$uri_root/$1/$2/$3";
+
+    my %sizes = ("64" => { "crop" => "square",
+                           "path" => "$path/64" },
+                 "150" => { "crop" => "height",
+                            "path" => "$path/150" },
+                 "500" => { "path" => "$path/500" },
+                 "1024" => { "path" => "$path" });
+
+    foreach my $size (sort { $a <=> $b } keys %sizes) {
+        my $maxwidth = $size;
+        my $maxheight = $size;
+        my $crop = "";
+
+        # do height first because sometimes that's all we care about...
+        my $hscale = $maxheight / $height;
+        my $newwidth = int($width * $hscale);
+        my $newheight = int($height * $hscale);
+
+        if ($sizes{$size}->{'crop'} eq 'height') {
+            # we're done
+        } elsif ($sizes{$size}->{'crop'} eq 'width') {
+            my $wscale = $maxwidth / $width;
+            $newwidth = int($width * $wscale);
+            $newheight = int($height * $wscale);
+        } elsif ($sizes{$size}->{'crop'} eq 'square') {
+            if ($width != $height) { # Crop to square
+                if ($width > $height) {
+                    $newwidth = $height;
+                    $newheight = $height;
+                    $crop = int(($width - $height) / 2);
+                    $crop = "-crop ${newwidth}x${newheight}+${crop}+0";
+                } else {
+                    $newwidth = $width;
+                    $newheight = $width;
+                    $crop = int(($height - $width) / 2);
+                    $crop = "-crop ${newwidth}x${newheight}+0+${crop}";
+                }
+                $newwidth = $size;
+                $newheight = $size;
+            }
+        } else {
+            if ($newwidth > $maxwidth) {
+                my $wscale = $maxwidth / $width;
+                $newwidth = int($width * $wscale);
+                $newheight = int($height * $wscale);
+            }
+        }
+
+        my $s3path = $sizes{$size}->{'path'} . "/" . $filename;
+
+        print "\tScale:  ($width,$height)$rot => ($newwidth,$newheight)\n";
+
+        my $exists = $bucket->get_key($s3path);
+        if (!defined($exists)) {
+            system "convert $crop$rot -geometry ${newwidth}x${newheight} \"$image\" \"$tmpfile\""
+                unless $DEBUG;
+            print "\tUpload: $s3path\n";
+            $rc = upload($s3path, $tmpfile, "image/jpeg");
+            die unless $rc;
+        }
+    }
+
+    print "\tExtract EXIF metadata\n";
+    system("exiftool -X $image > $tmpfile")
+        unless $DEBUG;
+    my $s3path = $path . "/" . $filename;
+    $s3path =~ s/\.jpg$/\.xml/;
+    print "\tUpload: $s3path\n";
+
+    open (F, $tmpfile);
+    read (F, $_, -s $tmpfile);
+    close (F);
+
+    post($_, "application/xml", "/" . $s3path, $collection) unless $DEBUG;
+
+    #$rc = upload($s3path, $tmpfile, "application/xml");
+    #die unless $rc;
+}
+
+# ================================================================================
+
+sub upload {
+    my $key = shift;
+    my $tmpfile = shift;
+    my $contentType = shift;
+
+    return 1 if $DEBUG;
+
+    if (!$REPLACE) {
+        my $exists = $bucket->get_key($key);
+        if (defined($exists)) {
+            warn "\t\tSkipping upload, key exists\n";
+            return 1;
+        }
+    }
+
+
+    return $bucket->add_key_filename($key, $tmpfile,
+                                     { 'content_type' => $contentType,
+                                       'acl_short' => 'public-read'
+                                     });
 }
 
 # ================================================================================
 
 sub post {
-    my $file = shift;
+    my $data = shift;
+    my $type = shift;
     my $uri = shift;
-    my $type = $file =~ /\.xml$/ ? "application/xml" : "image/jpeg";
+    my $collection = shift;
+    my $skip = shift;
     my $method = "POST";
     my $username = undef;
     my $password = undef;
 
     my $posturi  = "http://localhost:7071/upload.xqy?media=$type&uri=$uri";
-    $posturi .= "&file=$file" if $type eq 'image/jpeg';
-    $posturi .= "&uploadts=$UPLOADTS";
     $posturi .= "&collection=$collection" if defined($collection);
     $posturi .= "&skip=true" if defined($skip);
 
@@ -114,11 +227,7 @@ sub post {
 
     my $req = new HTTP::Request($method => $posturi);
 
-    open (F, $file);
-    read (F, $_, -s $file);
-    close (F);
-
-    $req->content($_);
+    $req->content($data);
     $req->header("Content-Type" => $type);
 
     my $resp = $ua->request($req);
@@ -138,6 +247,8 @@ sub post {
         $resp = $ua->request($req);
     }
 
-    print $resp->code(), " ", $resp->content(), "\n";
+    print $resp->code(), " ", $resp->content(), "\n"
+        unless $resp->code() == 200;
+
     return $resp->code();
 }

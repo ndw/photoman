@@ -226,7 +226,6 @@ declare variable $endpoints:ENDPOINTS as element(rest:options)
          <param name="media" required="true"/>
          <param name="uri" required="true"/>
          <param name="file"/>
-         <param name="uploadts" as="long" required="true"/>
          <param name="skip" as="boolean" default="false"/>
          <param name="collection"/>
        </request>

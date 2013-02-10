@@ -36,7 +36,16 @@ declare variable $file   := map:get($params, "file");
 declare variable $media  := map:get($params, "media");
 declare variable $collection := map:get($params, "collection");
 declare variable $skip   := map:get($params, "skip");
-declare variable $uploadts := map:get($params, "uploadts");
+
+declare variable $uploadts
+  := let $dur   := current-dateTime() - xs:dateTime("1970-01-01T00:00:00Z")
+     let $days  := days-from-duration($dur) * (24*60*60)
+     let $hours := hours-from-duration($dur) * (60*60)
+     let $mins  := minutes-from-duration($dur) * 60
+     let $secs  := floor(seconds-from-duration($dur))
+     return
+       xs:unsignedLong($days + $hours + $mins + $secs);
+
 declare variable $format := if (contains($media, "xml")) then "xml" else "binary";
 declare variable $body   := xdmp:get-request-body($format);
 
@@ -68,14 +77,17 @@ declare function f:dmstodec(
 };
 
 declare function f:image-fn(
-  $size as xs:string,
+  $size as xs:string?,
   $uri as xs:string
 ) as xs:string
 {
-  let $user := substring-before($uri, "/")
-  let $rest := substring-after($uri, "/")
+  let $parts := tokenize($uri, "/")
+  let $name  := $parts[last()]
+  let $image := concat("/",
+                       if (empty($size)) then "" else concat($size, "/"), $name)
+  let $path  := string-join($parts[position() < last()], "/")
   return
-    concat("/images/", $user, "/", $size, "/", $rest)
+    concat("http://images.nwalsh.com/images/", $path, $image)
 };
 
 declare function f:classify(
@@ -168,7 +180,7 @@ else
 
                      <npl:images>
                        <npl:small>
-                         <npl:image>{f:image-fn("small", $fn)}</npl:image>
+                         <npl:image>{f:image-fn("500", $fn)}</npl:image>
                          { let $factor := min((1, 500 div xs:float(max(($width, $height)))))
                            return
                              (<npl:width>{floor($width * $factor)}</npl:width>,
@@ -176,12 +188,12 @@ else
                          }
                        </npl:small>
                        <npl:large>
-                         <npl:image>{f:image-fn("large", $fn)}</npl:image>
+                         <npl:image>{f:image-fn((), $fn)}</npl:image>
                          <npl:width>{floor($width)}</npl:width>
                          <npl:height>{floor($height)}</npl:height>
                        </npl:large>
                        <npl:thumb>
-                         <npl:image>{f:image-fn("thumb", $fn)}</npl:image>
+                         <npl:image>{f:image-fn("150", $fn)}</npl:image>
                          { (: Using xs:decimal in $factor causes DECOVRFLW. WTF? :)
                          let $factor := 150.0 div xs:float($height)
                          return
@@ -190,7 +202,7 @@ else
                          }
                        </npl:thumb>
                        <npl:square>
-                         <npl:image>{f:image-fn("square", $fn)}</npl:image>
+                         <npl:image>{f:image-fn("64", $fn)}</npl:image>
                          <npl:width>64</npl:width>
                          <npl:height>64</npl:height>
                        </npl:square>
@@ -245,4 +257,5 @@ else
                        else xdmp:permission("weblog-reader", "read"))
       return
         (xdmp:document-insert($uri, $desc, $xmlperm, $coll),
-         concat("Meta  ", $baseuri))
+         xdmp:log(concat("U: ", $uri)),
+         concat("Meta  ", $uri))
