@@ -133,9 +133,11 @@ return
               </p>
             </div>
 
+{(:
             <div class="views">
               <div>Viewed {u:views($photo)} times.</div>
             </div>
+:)}
 
             { if (u:admin())
               then
@@ -337,7 +339,7 @@ return
                       else
                         ()
                     }
-                    { if ($photo/composite:GPSPosition)
+                    { if ($photo/composite:GPSPosition and $photo/geo:lat)
                       then
                         <li>
                           { concat("GPS: ",
@@ -375,24 +377,15 @@ return
                 </div>
             }
 
+{(:
             { if (u:admin())
               then
                 <div>
                   <h3>Stats</h3>
-                  { let $uris := if ($size = "large")
-                                 then
-                                   let $base := substring-before(
-                                                  substring-after(xdmp:node-uri($photo),$user),
-                                                  ".xml")
-                                   return
-                                     (concat("/images/", $user, "/small", $base, ".jpg"),
-                                      concat("/images/", $user, "/large", $base, ".jpg"))
-                                 else substring-before(xdmp:node-uri($photo),".xml")
-                    let $uris := <uris>{ for $uri in $uris
-                                         return <uri>{$uri}</uri> }</uris>
+                  { let $uri := substring-before($uri, ".xml")
                     return
                       xdmp:invoke("/stats.xqy",
-                         (QName("","uris"), $uris),
+                         (QName("","uri"), $uri),
                          <options xmlns="xdmp:eval">
                            <database>{xdmp:database("photoman-audit")}</database>
                          </options>)
@@ -401,6 +394,7 @@ return
               else
                 ()
             }
+:)}
 
           </div>
         </div>
