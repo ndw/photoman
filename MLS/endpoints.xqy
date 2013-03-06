@@ -120,6 +120,11 @@ declare variable $endpoints:ENDPOINTS as element(rest:options)
          <param name="xml" values="rdf|docbook"/>
        </request>
 
+       <request uri="^/tags/([^/]+)$"
+                endpoint="/tags.xqy" user-params="forbid">
+         <uri-param name="userid">$1</uri-param>
+       </request>
+
        <request uri="^/dates/([^/]+)/(\d\d\d\d(-\d\d(-\d\d)?)?)$"
                 endpoint="/photos.xqy" user-params="forbid">
          <uri-param name="userid">$1</uri-param>
@@ -216,8 +221,8 @@ declare variable $endpoints:ENDPOINTS as element(rest:options)
                 endpoint="/ajax/set-location.xqy" user-params="forbid">
          <http method="POST"/>
          <param name="uri" required="true"/>
-         <param name="city" required="true"/>
-         <param name="province" required="true"/>
+         <param name="city"/>
+         <param name="province"/>
          <param name="country" required="true"/>
        </request>
 
