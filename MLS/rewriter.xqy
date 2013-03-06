@@ -13,16 +13,22 @@ declare default function namespace "http://www.w3.org/2005/xpath-functions";
 
 declare option xdmp:mapping "false";
 
-let $uri    := xdmp:get-request-url()
-let $result := rest:rewrite(endpoints:options())
+let $uri := xdmp:get-request-url()
 return
-  if (empty($result))
+  if (matches($uri, "/images/ndw/.*\.jpg$"))
   then
-    (xdmp:log(concat("URI Rewrite: ", $uri, " => 404!")),
-     xdmp:set-response-code(404, "Not found"),
-     audit:http(xdmp:get-request-method(), $uri, 404),
-     $uri)
+    concat("/redirect.xqy?uri=", $uri)
   else
-    ( (:xdmp:log(concat("URI Rewrite: ", $uri, " => ", $result)), :)
-     audit:http(xdmp:get-request-method(), $uri, 200),
-     $result)
+    let $result := rest:rewrite(endpoints:options())
+    return
+      if (empty($result))
+      then
+        (xdmp:log(concat("URI Rewrite: ", $uri, " => 404!")),
+         xdmp:set-response-code(404, "Not found"),
+         audit:http(xdmp:get-request-method(), $uri, 404),
+         $uri)
+      else
+        ( (:xdmp:log(concat("URI Rewrite: ", $uri, " => ", $result)), :)
+         audit:http(xdmp:get-request-method(), $uri, 200),
+         (: xdmp:log(concat("URI Rewrite: ", $uri, " => ", $result)), :)
+         $result)
