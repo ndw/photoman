@@ -45,7 +45,7 @@ declare variable $utils:search-options
          </value>
        </constraint>
        <constraint name="tag">
-         <range type="xs:string" facet="true" collation="http://marklogic.com/collation/codepoint">
+         <range type="xs:string" facet="true" collation="http://marklogic.com/collation/en/S1/T0020/AS/MO">
            <element ns="http://nwalsh.com/ns/photolib" name="tag"/>
          </range>
        </constraint>
