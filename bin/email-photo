@@ -4,6 +4,7 @@ use strict;
 use English;
 use MIME::Parser;
 use Image::ExifTool;
+use Cwd;
 
 ################################################################################
 #
@@ -12,9 +13,10 @@ use Image::ExifTool;
 #
 ################################################################################
 
-my $ROOT="/MarkLogic/photoman/photos";
-my $SIZE="/MarkLogic/photoman/bin/imgsize";
-my $UPLOAD="/MarkLogic/photoman/bin/upload-photo";
+my $ROOT="/tmp";
+my $UPLOAD="/MarkLogic/photoman2/bin/upload-photo";
+
+chdir($ROOT) || abort("Failed to chdir to $ROOT");
 
 my $parser = new MIME::Parser;
 $parser->output_under("/tmp");
@@ -73,6 +75,8 @@ sub process {
     my $subject = $head->get("Subject");
     chop($subject);
 
+    report("subject: $subject");
+
     $exif->SetNewValue('Title', $subject);
 
     my $txtpart = undef;
@@ -94,6 +98,9 @@ sub process {
         if (/^tag:\s*/i) {
             $_ = $POSTMATCH;
             my @tags = split(/,\s*/, $_);
+
+            report("tag: " . join(", ", @tags));
+
             $exif->SetNewValue('Subject', \@tags);
             $exif->SetNewValue('Keywords', \@tags);
         }
@@ -101,7 +108,10 @@ sub process {
         if (/^set:\s*/i) {
             $_ = $POSTMATCH;
             s/\s+//sg;
+
             $collection = $_;
+
+            report("set: ", $collection);
         }
 
         if (/^loc:\s*/i || /^location:\s*/) {
@@ -115,6 +125,8 @@ sub process {
                 $province = undef;
             }
 
+            report("loc: " . $country . "|" . $province . "|" . $city);
+
             $exif->SetNewValue("Country-PrimaryLocationName", $country)
                 if defined($country);
             $exif->SetNewValue("Province-State", $province)
@@ -125,16 +137,26 @@ sub process {
     }
     $IO->close();
 
-    my $dir = $exif->GetValue("DateTimeOriginal")
-        || abort("No DateTimeOriginal tag?");
+    my $dir = $exif->GetValue("DateTimeOriginal");
+
+    if (defined($dir)) {
+        report("DateTimeOriginal: " . $dir);
+    } else {
+        my ($sec,$min,$hour,$mday,$mon,$year,$wday,$yday,$isdst) = localtime(time());
+        $dir = sprintf("%04d:%02d:%02d %02d:%02d:%02d",
+                       $year+1900, $mon+1, $mday, $hour, $min, $sec);
+        report("No DateTimeOriginal: " . $dir);
+    }
 
     $dir =~ s/\s.+$//;
     $dir =~ s/:/\//g;
-    $dir = $ROOT . "/$dir";
 
     if (! -d $dir) {
         system("mkdir -p $dir") && abort("Unable to mkdir $dir");
     }
+
+    report("Updating EXIF");
+    $exif->WriteInfo($imgbody->path());
 
     my $fn = $imgbody->path();
     $fn =~ s/^.*(\/[^\/]+)$/$1/;
@@ -144,15 +166,8 @@ sub process {
     system("cp " . $imgbody->path() . " $fn")
         && abort("Unable to copy image to $fn");
 
-    system ("perl $SIZE $dir >> /tmp/email-photo.log 2>&1") && "Resizing failed: $fn\n";
-    # Fix permissions!
-    report("fix dirs: " . "find $ROOT -type d -exec chmod 755 {} \\;");
-    system ("/usr/bin/find $ROOT -type d -exec chmod 755 {} \\;");
-    report("fix fns: " . "find $dir -type f -exec chmod 644 {} \\;");
-    system ("/usr/bin/find $dir -type f -exec chmod 644 {} \\;");
-
     my $uargs = defined($collection) ? "-c \"$collection\" $fn" : $fn;
-    system ("perl $UPLOAD $uargs >> /tmp/email-photo.log 2>&1") && "Upload failed: $fn\n";
+    system ("$UPLOAD $uargs >> /tmp/email-photo.log 2>&1") && "Upload failed: $fn\n";
 }
 
 sub abort {

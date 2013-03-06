@@ -12,7 +12,7 @@ use vars qw($opt_D $opt_r $opt_c);
 
 my $usage = "Usage: $0 [-D] [-r] [-c collection] images\n";
 
-die $usage if ! getopts('Drc:');
+die $usage if ! getopts('Drc:p:');
 
 my $DEBUG = $opt_D;
 my $REPLACE = $opt_r;
@@ -88,19 +88,10 @@ for my $image (@ARGV) {
 
     print "$image\n";
 
-    # Let's see if we can figure out the date/time this picture was taken
-    # Use the current date/time if we can't find one in the EXIF
-    my @dto_list = ( $exif->GetValue("DateCreated", 'ValueConv'),
-                     $exif->GetValue("CreateDate", 'ValueConv'),
-                     $exif->GetValue("DateTimeOriginal", 'ValueConv'),
-                     strftime("%Y:%m:%d %H:%M:%S", localtime()) );
-    my $dto = $dto_list[0];
+    die "You meant to include the path, surely?\n" unless $image =~ /\/?(.*?)\/([^\/]+)$/;
 
-    die "Cannot parse date/time: $dto\n"
-        unless $dto =~ /^(\d\d\d\d):(\d\d):(\d\d) (\d\d):(\d\d):(\d\d)(\.(\d+))?$/;
-
-    my $filename = "$1$2$3-$4$5$6-$8.jpg";
-    my $path = "$uri_root/$1/$2/$3";
+    my $path = "$uri_root/$1";
+    my $filename = $2;
 
     my %sizes = ("64" => { "crop" => "square",
                            "path" => "$path/64" },
@@ -153,13 +144,17 @@ for my $image (@ARGV) {
 
         print "\tScale:  ($width,$height)$rot => ($newwidth,$newheight)\n";
 
-        my $exists = $bucket->get_key($s3path);
-        if (!defined($exists)) {
-            system "convert $crop$rot -geometry ${newwidth}x${newheight} \"$image\" \"$tmpfile\""
-                unless $DEBUG;
+        if ($DEBUG) {
             print "\tUpload: $s3path\n";
-            $rc = upload($s3path, $tmpfile, "image/jpeg");
-            die unless $rc;
+        } else {
+            my $exists = $bucket->get_key($s3path);
+            if (!defined($exists)) {
+                system "convert $crop$rot -geometry ${newwidth}x${newheight} \"$image\" \"$tmpfile\""
+                    unless $DEBUG;
+                print "\tUpload: $s3path\n";
+                $rc = upload($s3path, $tmpfile, "image/jpeg");
+                die unless $rc;
+            }
         }
     }
 
@@ -251,4 +246,29 @@ sub post {
         unless $resp->code() == 200;
 
     return $resp->code();
+}
+
+sub photodate {
+    my $image = shift;
+
+    my $exif = new Image::ExifTool;
+    $exif->Options(IgnoreMinorErrors => '1');
+    $exif->ExtractInfo($image);
+
+    my ($dev,$ino,$mode,$nlink,$uid,$gid,$rdev,$size,
+        $atime,$mtime,$ctime,$blksize,$blocks)
+        = stat($image);
+
+    # Let's see if we can figure out the date/time this picture was taken
+    # Use the current date/time if we can't find one in the EXIF
+    my @dto_list = ( $exif->GetValue("CreateDate", 'ValueConv'),
+                     $exif->GetValue("DateCreated", 'ValueConv'),
+                     $exif->GetValue("DateTimeOriginal", 'ValueConv'),
+                     strftime("%Y:%m:%d %H:%M:%S", localtime($mtime)) );
+    my $dto = $dto_list[0];
+
+    die "Cannot parse date/time: $dto\n"
+        unless $dto =~ /^(\d\d\d\d):(\d\d):(\d\d) (\d\d):(\d\d):(\d\d)(\.(\d+))?$/;
+
+    return $dto;
 }
