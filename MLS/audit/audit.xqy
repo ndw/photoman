@@ -31,16 +31,15 @@ declare function audit:http($verb as xs:string,
 as empty-sequence()
 {
   let $referrer    := xdmp:get-request-header("Referer", ())
+  let $querystr    := if (contains($uri, "?")) then substring-after($uri, "?") else ""
+  let $uri         := if (contains($uri, "?")) then substring-before($uri, "?") else $uri
   let $after-slash := substring($uri, 2)
-  let $dir         := if (contains($after-slash, "/"))
-                      then substring-before($after-slash, "/")
-                      else $after-slash
-  let $filename    := replace($uri, "^.*/([^/]+)$", "$1")
+  let $parts       := tokenize($after-slash, "/")
+  let $dir         := concat("/", string-join(subsequence($parts, 1, count($parts)-1), "/"))
+  let $filename    := subsequence($parts, count($parts))
   let $ext         := if (contains($filename, "."))
                       then replace($filename, "^.*\.([^\.]+)$", "$1")
                       else ""
-  let $querystr    := if (contains($uri, "?")) then substring-after($uri, "?") else ""
-  let $uri         := if (contains($uri, "?")) then substring-before($uri, "?") else $uri
 
   let $message
     := <http xmlns="http://nwalsh.com/ns/modules/photoman/audit">
