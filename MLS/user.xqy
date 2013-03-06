@@ -211,6 +211,7 @@ return
                                  search:parse(concat("user:", $user,
                                                      " collection:""", $set, """"),
                                               $u:search-options))
+                 order by $set descending
                  return
                    <dt>
                      <span class="btoggle">{"&#160;"}</span>
@@ -219,6 +220,7 @@ return
                      </a>
                      ({$count})
                    </dt>,
+                 if (empty($newsets)) then () else <hr/>,
                  if ($setxml/*/*) then f:show-sets($setxml/*/*) else ())
             }
           </dl>
@@ -314,6 +316,7 @@ return
 
       </tr>
 
+{(:
       <tr>
         <td>&#160;</td>
         <td colspan="2" valign="top">
@@ -338,6 +341,7 @@ return
           </table>
         </td>
       </tr>
+:)}
 
 {(:
       <tr>
@@ -352,6 +356,7 @@ return
       </tr>
 :)}
 
+{(:
       <tr>
         <td>&#160;</td>
         <td colspan="2">
@@ -359,10 +364,10 @@ return
             then
               <div>
                 <h3>Stats</h3>
-                { let $uris := <uris><uri>/users/ndw</uri></uris>
+                { let $uri := "/users/ndw"
                   return
                     xdmp:invoke("/stats.xqy",
-                       (QName("","uris"), $uris),
+                       (QName("","uri"), $uri),
                        <options xmlns="xdmp:eval">
                          <database>{xdmp:database("photoman-audit")}</database>
                        </options>)
@@ -373,6 +378,7 @@ return
           }
         </td>
       </tr>
+:)}
     </table>
     </div>
   </body>
