@@ -1,4 +1,12 @@
 <sets>
+  <set name="2013-02-xml-prague"/>
+  <set name="2013-new-digs"/>
+  <set name="urban-farms-bycicle-tour-2012"/>
+  <set name="tpac-2012"/>
+  <set name="france-oct-2012"/>
+  <set name="xml-summer-school-oxford-gb-september-2012"/>
+  <set name="marklogic-engineering-bocce-2012"/>
+  <set name="rail-trail-2012-05"/>
    <set name="2012-03-austin"/>
    <set name="2012-caribbean"/>
    <set name="2012-xml-prague"/>
@@ -167,4 +175,5 @@
    <set name="paris-street-art-june-2006"/>
    <set name="san-francisco-1999"/>
    <set name="st-thomas-usvi-february-2003"/>
+   <set name="zzzz-duplicates-collection"/>
 </sets>
