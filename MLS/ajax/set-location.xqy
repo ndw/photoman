@@ -20,11 +20,16 @@ declare namespace rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#";
 
 declare option xdmp:mapping "false";
 
-let $params := rest:process-request(endpoints:request("/ajax/set-location.xqy"))
-let $uri    := map:get($params, "uri")
-let $city   := map:get($params, "city")
-let $state  := map:get($params, "province")
+let $params  := rest:process-request(endpoints:request("/ajax/set-location.xqy"))
+let $uri     := map:get($params, "uri")
+let $city    := map:get($params, "city")
+let $state   := map:get($params, "province")
 let $country := map:get($params, "country")
+
+let $city    := if ($city eq "") then () else $city
+let $state   := if ($state eq "") then () else $state
+let $country := if ($country eq "") then () else $country
+
 let $photo  := doc($uri)/*
 return
   if (u:admin())
