@@ -24,7 +24,7 @@ return
   if (u:admin() and ($vis = "public" or $vis = "private") and exists($photo))
   then
     (let $perm := xdmp:permission("weblog-reader", "read")
-     for $uri in (xdmp:node-uri($photo), $photo/rdf:Description/npl:images//npl:image)
+     for $uri in (xdmp:node-uri($photo))
      return
        if ($vis = "public")
        then xdmp:document-add-permissions(string($uri), $perm)
