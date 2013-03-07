@@ -19,16 +19,20 @@ return
   then
     concat("/redirect.xqy?uri=", $uri)
   else
-    let $result := rest:rewrite(endpoints:options())
-    return
-      if (empty($result))
-      then
-        (xdmp:log(concat("URI Rewrite: ", $uri, " => 404!")),
-         xdmp:set-response-code(404, "Not found"),
-         audit:http(xdmp:get-request-method(), $uri, 404),
-         $uri)
-      else
-        ( (:xdmp:log(concat("URI Rewrite: ", $uri, " => ", $result)), :)
-         audit:http(xdmp:get-request-method(), $uri, 200),
-         (: xdmp:log(concat("URI Rewrite: ", $uri, " => ", $result)), :)
-         $result)
+    if (starts-with($uri, "/js/") or starts-with($uri, "/css/"))
+    then
+      $uri
+    else
+      let $result := rest:rewrite(endpoints:options())
+      return
+        if (empty($result))
+        then
+          (xdmp:log(concat("URI Rewrite: ", $uri, " => 404!")),
+           xdmp:set-response-code(404, "Not found"),
+           audit:http(xdmp:get-request-method(), $uri, 404),
+           $uri)
+        else
+          ( (:xdmp:log(concat("URI Rewrite: ", $uri, " => ", $result)), :)
+           audit:http(xdmp:get-request-method(), $uri, 200),
+           (: xdmp:log(concat("URI Rewrite: ", $uri, " => ", $result)), :)
+           $result)

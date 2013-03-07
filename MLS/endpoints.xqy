@@ -21,12 +21,8 @@ declare variable $endpoints:ENDPOINTS as element(rest:options)
          <uri-param name="uri">$1</uri-param>
        </request>
 
-       <request uri="^(/css/.*\.css|/js/.*\.js|/fonts/.*)$"
+       <request uri="^(/fonts/.*)$"
                 endpoint="/serve.xqy" user-params="forbid">
-         <uri-param name="uri">$1</uri-param>
-       </request>
-
-       <request uri="^(/css/.*\.css|/js/.*\.js)$" endpoint="/serve.xqy" user-params="forbid">
          <uri-param name="uri">$1</uri-param>
        </request>
 
