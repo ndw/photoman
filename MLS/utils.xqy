@@ -341,25 +341,39 @@ declare function utils:oneYear(
     where $date <= $dtsecond and ($date = $months)
     return
       map:put($matches, $ystr, (map:get($matches, $ystr), $date))
+
+  let $facets := $search/search:facet[@name='date']/search:facet-value
+
   return
     <dl xmlns="http://www.w3.org/1999/xhtml">
       { let $years := for $year in map:keys($matches) order by $year return $year
         for $year at $yindex in $years
+        let $counts := for $facet in $facets
+                       where starts-with($facet/@name, string($year))
+                       return
+                         xs:integer($facet/@count)
         return
           (<dt>
              <a href="{utils:patch-uri('date', string($year))}" class="plain">
                {$year}
              </a>
+             {concat(" (", sum($counts), ")")}
            </dt>,
            <dd>
              <dl>
                { for $month at $mindex in map:get($matches, $year)
+                 let $pfx := substring(string($month), 1, 7)
+                 let $counts := for $facet in $facets
+                       where starts-with($facet/@name, $pfx)
+                       return
+                         xs:integer($facet/@count)
                  return
                    (if ($mindex = 1) then "" else ", ",
                     <a href="{utils:patch-uri('date', string(substring(string($month), 1, 7)))}"
                        class="plain">
                       {$MONTHS[month-from-date($month)]}
-                    </a>)
+                    </a>,
+                    concat(" (", sum($counts), ")"))
                }
              </dl>
            </dd>)
@@ -373,7 +387,7 @@ declare function utils:severalYears(
   $dtend as xs:date
 )
 {
-  ()
+  utils:oneYear($search, $dtstart, $dtend)
 };
 
 declare private function utils:calendar(
