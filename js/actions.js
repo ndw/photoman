@@ -17,11 +17,11 @@ function changeVisibility() {
 
 function makeEditable() {
     var id = $(this).attr("id");
-    var input = "<input id=\"" + id + "\" value=\"" + $(this).text() + "\">";
+    var input = "<input id=\"" + id + "\" size=\"80\">";
     $(this).after(input);
     $(this).remove();
     $("#" + id).change(edited);
-    $("#" + id).val("");
+    $("#" + id).val($(this).text())
     $("#" + id).focus();
 }
 
