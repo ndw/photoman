@@ -6,6 +6,11 @@ This project is a photo management application built on top of
 You can see it in operation at
 [photos.nwalsh.com](http://photos.nwalsh.com/).
 
+## Amazon S3
+
+Note: To resolve some bandwidth issues, I've recently implemented a branch,
+"s3", that stores the images in Amazon S3 and the metadata in XML.
+
 ## Installation
 
 1. Install MarkLogic Server 5 if you haven't already.
