@@ -41,6 +41,7 @@ let $city     := map:get($params, "city")
 let $photo    := doc($uri)/*
 let $lat      := $photo/geo:lat
 let $lng      := $photo/geo:long
+let $blackout := u:blackout($user, $photo/geo:lat, $photo/geo:long)
 return
   if (not($xml))
   then
@@ -59,7 +60,7 @@ return
         <script type="text/javascript" src="/js/dbmodnizr.js"></script>
         <script type="text/javascript" src="/js/jquery-1.7.1.min.js"></script>
 
-        { if (exists($lat))
+        { if (exists($lat) and (u:admin() or not($blackout)))
           then
             (<style type="text/css">v\:* {{ behavior:url(#default#VML); }}</style>,
              <script type="text/javascript"
@@ -234,8 +235,12 @@ return
                       else
                         ()
                     }
+                    { if (u:admin() and $blackout)
+                      then " (blacked out)"
+                      else ""
+                    }
                   </h3>
-                  { if (exists($lat))
+                  { if (exists($lat) and (u:admin() or not($blackout)))
                     then
                       <div id="map">
                       </div>
@@ -354,7 +359,8 @@ return
                       else
                         ()
                     }
-                    { if ($photo/composite:GPSPosition and $photo/geo:lat)
+                    { if ($photo/composite:GPSPosition and $photo/geo:lat
+                          and (u:admin() or not($blackout)))
                       then
                         <li>
                           { concat("GPS: ",
@@ -414,7 +420,7 @@ return
           </div>
         </div>
 
-        { if (exists($lat))
+        { if (exists($lat) and (u:admin() or not($blackout)))
           then
             <script type="text/javascript">
   $(document).ready(function() {{

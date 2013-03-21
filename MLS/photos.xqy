@@ -254,7 +254,11 @@ return
           <div class="sidebar">
             { f:page-navigation($search),
 
-                 let $geo := $photos[geo:lat]
+                 let $geo := for $photo in $photos[geo:lat]
+                             where u:admin() or not(u:blackout($photo/npl:user,
+                                                               $photo/geo:lat, $photo/geo:long))
+                             return
+                               $photo
                  let $pts := for $photo in $geo
                              return concat('{"lat": ', $photo/geo:lat,
                                            ',"lng": ', $photo/geo:long,

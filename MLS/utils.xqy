@@ -523,6 +523,28 @@ declare function utils:photo-visibility(
       else "private"
 };
 
+declare function utils:blackout(
+  $user as xs:string,
+  $plat as xs:float?,
+  $plong as xs:float?
+) as xs:boolean
+{
+  if (empty($plat) or empty($plong))
+  then
+    false()
+  else
+    let $blackouts := doc(concat("/etc/", $user, "/blackouts.xml"))
+    let $ploc := cts:point($plat, $plong)
+    let $excl := for $loc in $blackouts/blackouts/location
+                 let $eloc := cts:point($loc/@lat, $loc/@long)
+                 let $dist := cts:distance($ploc, $eloc)
+                 where $dist < xs:float($loc/@radius)
+                 return
+                   $loc
+    return
+      exists($excl)
+};
+
 declare function utils:show-photos(
   $params as map:map,
   $photos as element(rdf:Description)*,
@@ -552,6 +574,7 @@ declare function utils:show-photos(
                           else string($photo/npl:images/npl:thumb/npl:image)
             let $width  := xs:integer($photo/npl:images/npl:thumb/npl:width * $factor)
             let $width  := if (count($row/npl:photo) = 1) then $width + 2 else $width
+            let $blackout := utils:blackout($photo/npl:user, $photo/geo:lat, $photo/geo:long)
             return
               <div>
                 <a href="{utils:patch-uri2($photo/@rdf:about, $params, (), (), false())}"
@@ -565,7 +588,9 @@ declare function utils:show-photos(
                     }
                     { attribute { fn:QName("", "class") }
                                 { concat("thumb",
-                                         if ($photo/geo:lat) then " geo" else "",
+                                         if ($photo/geo:lat
+                                             and (utils:admin() or not($blackout)))
+                                         then " geo" else "",
                                          if ($public) then "" else " private")
                                 }
                     }
