@@ -211,7 +211,7 @@ sub post {
     my $username = undef;
     my $password = undef;
 
-    my $posturi  = "http://localhost:7071/upload.xqy?media=$type&uri=$uri";
+    my $posturi  = "http://localhost:9071/upload.xqy?media=$type&uri=$uri";
     $posturi .= "&collection=$collection" if defined($collection);
     $posturi .= "&skip=true" if defined($skip);
 
