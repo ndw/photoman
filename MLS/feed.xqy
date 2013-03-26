@@ -171,7 +171,7 @@ return
               <div class="photo">
                 <div class="image">
                   <img class="{u:photo-visibility($photo)}"
-                         src="http://photos.nwalsh.com{$photo/npl:images/npl:small/npl:image}"/>
+                         src="{$photo/npl:images/npl:small/npl:image}"/>
                 </div>
               </div>
 
