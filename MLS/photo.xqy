@@ -189,19 +189,14 @@ return
 
             { if (exists($set))
               then
-                let $query  := cts:collection-query($set)
+                let $query  := cts:collection-query(concat($user, "/", $set))
                 let $images := for $photo in cts:search(/rdf:Description, $query)
                                order by $photo/ExifIFD:CreateDate
                                return string($photo/@rdf:about)
                 let $index  := index-of($images, string($photo/@rdf:about))
                 return
                   <div class="otherphotos">
-                    <h3>
-                      { "Other photos in " }
-                      <a href="{u:patch-uri2($params, (), (), false())}">
-                        { u:set-title($user, $set) }
-                      </a>
-                    </h3>
+                    <h3>Other photos in this set</h3>
                     { for $pos in ($index - 2 to $index + 2)
                       return
                         if ($pos < 1 or empty($images[$pos]))
@@ -211,10 +206,15 @@ return
                           let $uri   := $images[$pos]
                           let $photo := doc(concat($uri, ".xml"))/*
                           return
-                            <a href="{$uri}?set={$set}">
-                              <img class="square {u:photo-visibility($photo)}"
+                            if ($pos = $index)
+                            then
+                              <img class="square {u:photo-visibility($photo)} current"
                                    src="{$photo/npl:images/npl:square/npl:image}"/>
-                            </a>
+                            else
+                              <a href="{$uri}?set={$set}">
+                                <img class="square {u:photo-visibility($photo)}"
+                                     src="{$photo/npl:images/npl:square/npl:image}"/>
+                              </a>
                     }
                   </div>
               else
