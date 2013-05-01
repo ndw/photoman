@@ -262,14 +262,13 @@ declare function utils:patch-uri2(
   $repeat as xs:boolean
 ) as xs:string
 {
-  let $map := map:map(<foo>{$params}</foo>/map:map)
   let $_   := if (empty($name))
               then
                 ()
               else
-                if (exists(map:get($map, $name)))
+                if (exists(map:get($params, $name)))
                 then
-                  let $values := map:get($map, $name)
+                  let $values := map:get($params, $name)
                   let $othervalues := for $v in $values
                                       where string($v) != $value return $v
                   let $newvalue := if ($repeat)
@@ -280,11 +279,11 @@ declare function utils:patch-uri2(
                                         then ()
                                         else $value
                   return
-                    map:put($map, $name, $newvalue)
+                    map:put($params, $name, $newvalue)
                 else
-                  map:put($map, $name, $value)
-  let $opt := for $pname in map:keys($map)
-              for $value in map:get($map, $pname)
+                  map:put($params, $name, $value)
+  let $opt := for $pname in map:keys($params)
+              for $value in map:get($params, $pname)
               where not($pname = ("userid", "page", "xml", "uri", "size")) or $name=$pname
               return
                 concat($pname,"=",$value)
