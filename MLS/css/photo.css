@@ -33,6 +33,13 @@ img.private {
     border-color: #FF9999;
 }
 
+img.current {
+    border-width: 1px;
+    border-style: solid;
+    border-color: black;
+    margin-right: 4px;
+}
+
 .sidebar {
     position: absolute;
     top: 0px;
