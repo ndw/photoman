@@ -258,13 +258,6 @@ return
                                                                $photo/geo:lat, $photo/geo:long))
                              return
                                $photo
-                 let $pts := for $photo in $geo
-                             return concat('{"lat": ', $photo/geo:lat,
-                                           ',"lng": ', $photo/geo:long,
-                                           ',"title": "', $photo/XMP-dc:Title, '"',
-                                           ',"uri": "', $photo/@rdf:about, '"',
-                                           ',"square": "', $photo/npl:images/npl:square/npl:image, '"',
-                                           '}')
                  let $locations := $search/search:facet[@name='location']/search:facet-value
                  where $geo or $locations
                  return
