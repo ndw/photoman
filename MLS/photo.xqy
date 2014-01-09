@@ -132,6 +132,61 @@ return
                   </a>
               }
             </div>
+
+            <div class="caption">
+              {
+                let $caption := string($photo/npl:caption)
+                let $jeanne  := string($photo/npl:jeanne)
+                return
+                  if (u:admin())
+                  then
+                    <div xmlns="http://www.w3.org/1999/xhtml">
+                      <div>
+                        <input type="hidden" id="photo-caption-uri"
+                               value="{xdmp:node-uri($photo)}"/>
+                        <span id="photo-caption" class="editable">
+                          { if ($caption = "")
+                            then
+                              "/caption/"
+                            else
+                              $caption
+                          }
+                        </span>
+                      </div>
+                      <div>
+                        <input type="hidden" id="photo-jeanne-uri"
+                               value="{xdmp:node-uri($photo)}"/>
+                        <span id="photo-jeanne" class="editable">
+                          { if ($jeanne = "")
+                            then
+                              "/jeanne/"
+                            else
+                              $jeanne
+                          }
+                        </span>
+                      </div>
+                    </div>
+                  else
+                    <div>
+                      { if ($caption = "")
+                        then ()
+                        else
+                          <div>
+                            { $caption }
+                          </div>
+                      }
+                      { if ($jeanne = "")
+                        then ()
+                        else
+                          <div>
+                            { concat("“", $jeanne, "”") }
+                            { "—Jeanne Chauvin" }
+                          </div>
+                      }
+                    </div>
+              }
+            </div>
+
           </div>
 
           <div class="pure-u-2-5">

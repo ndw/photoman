@@ -20,6 +20,11 @@
    padding-left: 2em;
 }
 
+.photo .caption {
+   padding-top: 1em;
+   padding-left: 2em;
+}
+
 img.square {
     border-width: 1px;
     border-style: solid;

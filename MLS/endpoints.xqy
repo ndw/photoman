@@ -185,6 +185,19 @@ declare variable $endpoints:ENDPOINTS as element(rest:options)
          <param name="value" required="true"/>
        </request>
 
+
+       <request uri="^/ajax/photo-caption"
+                endpoint="/ajax/change-photo-caption.xqy" user-params="forbid">
+         <param name="uri" required="true"/>
+         <param name="value" required="true"/>
+       </request>
+
+       <request uri="^/ajax/photo-jeanne"
+                endpoint="/ajax/change-photo-jeanne.xqy" user-params="forbid">
+         <param name="uri" required="true"/>
+         <param name="value" required="true"/>
+       </request>
+
        <request uri="^/ajax/set-user"
                 endpoint="/ajax/change-user-title.xqy" user-params="forbid">
          <param name="uri" required="true"/>
