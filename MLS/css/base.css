@@ -54,8 +54,8 @@ h3 {
 }
 
 .content {
-    padding-left: 2em;
-    padding-right: 2em;
+   padding-left: 2em;
+   padding-right: 2em;
 }
 
 div.description {
@@ -101,4 +101,8 @@ dd {
 
 .day0 {
     color: #aaaaaa;
+}
+
+.leaflet-popup-content {
+   color: black;
 }

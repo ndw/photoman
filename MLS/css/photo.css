@@ -8,18 +8,16 @@
     width: 100%;
 }
 
-.photo {
-    position: absolute;
-    top: 4px;
-    left: 2em;
-}
-
 .photo img {
     border-width: 8px;
     border-style: solid;
     border-color: white;
     border-radius: 4px;
     box-shadow: 5px 5px 10px #222222;
+}
+
+.photo .image {
+   padding-left: 2em;
 }
 
 img.square {
@@ -41,12 +39,8 @@ img.current {
 }
 
 .sidebar {
-    position: absolute;
-    top: 0px;
-    left: 580px;
-    width: 400px;
-    padding-left: 1em;
-    border-left: 1px solid #aaaaaa;
+   padding-left: 2em;
+   padding-right: 0.5em;
 }
 
 .sidebar > div {

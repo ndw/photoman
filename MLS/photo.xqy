@@ -69,6 +69,10 @@ return
            else
              ()
         }
+
+        <meta name="viewport" content="width=device-width,initial-scale=1"/>
+        <link rel="stylesheet" type="text/css" href="/css/pure-min.css" />
+
         { if (u:admin())
           then
             <script type="text/javascript" src="/js/actions.js"></script>
@@ -77,41 +81,44 @@ return
         }
       </head>
       <body>
-        <div class="header">
-          <div class="breadcrumbs">
-            <a href="/">photos.nwalsh.com</a>
-            { " | " }
-            <a href="/users/{$user}">{$user}</a>
-          </div>
+        <div class="header pure-g-r">
+          <div class="pure-u-1">
+            <div class="breadcrumbs">
+              <a href="/">photos.nwalsh.com</a>
+              { " | " }
+              <a href="/users/{$user}">{$user}</a>
+            </div>
 
-          <h1>
-            {
-              let $title := string($photo/XMP-dc:Title)
-              return
-                if (u:admin())
-                then
-                  (<input xmlns="http://www.w3.org/1999/xhtml"
-                          type="hidden" id="photo-title-uri" value="{xdmp:node-uri($photo)}"/>,
-                   <span xmlns="http://www.w3.org/1999/xhtml" id="photo-title"
-                         class="editable">
-                     { $title }
-                   </span>)
-                else
-                  $title
+            <h1>
+              {
+                let $title := string($photo/XMP-dc:Title)
+                return
+                  if (u:admin())
+                  then
+                    (<input xmlns="http://www.w3.org/1999/xhtml"
+                            type="hidden" id="photo-title-uri"
+                            value="{xdmp:node-uri($photo)}"/>,
+                     <span xmlns="http://www.w3.org/1999/xhtml"
+                           id="photo-title" class="editable">
+                       { $title }
+                     </span>)
+                   else
+                     $title
+              }
+            </h1>
+
+            { if (exists($country) or exists($province) or exists($city))
+              then
+                <div>Location:
+                  { ($city, $province, $country)[1] }
+                </div>
+              else
+                ()
             }
-          </h1>
-
-          { if (exists($country) or exists($province) or exists($city))
-            then
-              <div>Location:
-                { ($city, $province, $country)[1] }
-              </div>
-            else
-              ()
-          }
+          </div>
         </div>
-        <div class="content">
-          <div class="photo">
+        <div class="pure-g-r">
+          <div class="photo pure-u-3-5">
             <div class="image">
               { if ($size = "large")
                 then
@@ -126,6 +133,8 @@ return
               }
             </div>
           </div>
+
+          <div class="pure-u-2-5">
           <div class="sidebar">
             <div class="credit">
               <h3>Credits</h3>
@@ -418,6 +427,7 @@ return
 
           </div>
         </div>
+      </div>
 
         { if (exists($lat) and (u:admin() or not($blackout)))
           then
