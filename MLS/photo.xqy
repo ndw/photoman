@@ -9,6 +9,9 @@ import module namespace endpoints="http://nwalsh.com/ns/photoends"
 import module namespace u="http://nwalsh.com/ns/modules/utils"
        at "utils.xqy";
 
+import module namespace maps="http://nwalsh.com/ns/photomap"
+       at "/maps-osm.xqy";
+
 declare namespace f="http://nwalsh.com/ns/functions";
 declare namespace npl="http://nwalsh.com/ns/photolib";
 declare namespace XMP-dc="http://ns.exiftool.ca/XMP/XMP-dc/1.0/";
@@ -62,11 +65,7 @@ return
 
         { if (exists($lat) and (u:admin() or not($blackout)))
           then
-            (<style type="text/css">v\:* {{ behavior:url(#default#VML); }}</style>,
-             <script type="text/javascript"
-                     src="http://maps.google.com/maps/api/js?sensor=false">
-             </script>,
-             <script type="text/javascript" src="/js/mapping.js"></script>)
+            maps:head-elements()
            else
              ()
         }

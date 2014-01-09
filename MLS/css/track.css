@@ -1,0 +1,26 @@
+/* CSS for photo page */
+
+.header {
+}
+
+.content {
+    position: relative;
+    width: 100%;
+}
+
+#map {
+    width: 800px;
+    height: 600px;
+}
+
+.infowindow a,
+.infowindow a:visited {
+    color: black;
+}
+
+.infowindow img {
+    border-radius: 4px;
+    width: 48px;
+    height: 48px;
+    vertical-align: top;
+}

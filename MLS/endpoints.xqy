@@ -228,6 +228,15 @@ declare variable $endpoints:ENDPOINTS as element(rest:options)
          <param name="country" required="true"/>
        </request>
 
+       <request uri="^/tracks/([^/]+)/?$" endpoint="/tracks.xqy" user-params="forbid">
+         <uri-param name="userid">$1</uri-param>
+       </request>
+
+       <request uri="^/track/([^/]+)/([^/]+)/?$" endpoint="/track.xqy" user-params="forbid">
+         <uri-param name="userid">$1</uri-param>
+         <uri-param name="date">$2</uri-param>
+       </request>
+
        <request uri="^/upload.xqy$" endpoint="/upload.xqy" user-params="forbid">
          <http method="POST"/>
          <param name="media" required="true"/>
@@ -235,6 +244,10 @@ declare variable $endpoints:ENDPOINTS as element(rest:options)
          <param name="file"/>
          <param name="skip" as="boolean" default="false"/>
          <param name="collection"/>
+       </request>
+
+       <request uri="^/upload-track.xqy$" endpoint="/upload-track.xqy" user-params="forbid">
+         <http method="POST"/>
        </request>
      </options>;
 

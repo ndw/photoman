@@ -9,6 +9,9 @@ import module namespace rest="http://marklogic.com/appservices/rest"
 import module namespace endpoints="http://nwalsh.com/ns/photoends"
        at "/endpoints.xqy";
 
+import module namespace maps="http://nwalsh.com/ns/photomap"
+       at "/maps-osm.xqy";
+
 import module namespace u="http://nwalsh.com/ns/modules/utils"
        at "utils.xqy";
 
@@ -186,13 +189,9 @@ return
         <link rel="stylesheet" type="text/css" href="/css/base.css" />
         <link rel="stylesheet" type="text/css" href="/css/set.css" />
         <link rel="icon" href="/favicon.png" type="image/png" />
-        <style type="text/css">v\:* {{ behavior:url(#default#VML); }}</style>
         <script type="text/javascript" src="/js/dbmodnizr.js"></script>
         <script type="text/javascript" src="/js/jquery-1.7.1.min.js"></script>
-        <script type="text/javascript"
-                src="http://maps.google.com/maps/api/js?sensor=false">
-        </script>
-        <script type="text/javascript" src="/js/mapping.js"></script>
+        { maps:head-elements() }
         { if (u:admin())
           then
             <script type="text/javascript" src="/js/actions.js"></script>
@@ -273,12 +272,7 @@ return
                      <h3>Locations</h3>
                      { if ($geo)
                        then
-                         (<div id="map"></div>,
-                          <script type="text/javascript">
-                            $(document).ready(function() {{
-                              showMapGroup([{string-join($pts,",")}]);
-                            }});
-                          </script>)
+                         maps:map-body($user, $geo)
                        else
                          ()
                      }
