@@ -1,4 +1,13 @@
 <sets>
+  <set name="2013-04-westcave-preserve"/>
+  <set name="2013-04-hiking-utah">
+    <set name="2013-04-zmr"/>
+    <set name="2013-04-bryce"/>
+    <set name="2013-04-zion"/>
+  </set>
+  <set name="2013-04-las-vegas"/>
+  <set name="2013-03-wild-basin-wilderness-park"/>
+  <set name="2013-03-austin-botanical-garden"/>
   <set name="2013-02-xml-prague"/>
   <set name="2013-new-digs"/>
   <set name="urban-farms-bycicle-tour-2012"/>
