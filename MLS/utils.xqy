@@ -477,6 +477,7 @@ declare private function utils:loclink(
               else
                 utils:patch-uri2($params, "city", $key)
 
+(:
   let $chk := if ($city = "" or empty($city))
               then
                 if ($state = "" or empty($state))
@@ -486,6 +487,7 @@ declare private function utils:loclink(
                   $key = map:get($params, "province")
               else
                 $key = map:get($params, "city")
+:)
 
   return
     if ($state = "" and empty($city))
@@ -497,10 +499,12 @@ declare private function utils:loclink(
           { $seq[1] }
         </a>
         ({string($facet/@count)})
+{(:
         { if ($chk)
           then " &#x2714;"
           else ""
         }
+:)}
       </span>
 };
 
