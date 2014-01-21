@@ -14,7 +14,7 @@ use Cwd;
 ################################################################################
 
 my $ROOT="/tmp";
-my $UPLOAD="/MarkLogic/photoman2/bin/upload-photo";
+my $UPLOAD="/MarkLogic/photoman/bin/upload-photo";
 
 chdir($ROOT) || abort("Failed to chdir to $ROOT");
 
