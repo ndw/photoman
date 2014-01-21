@@ -45,6 +45,7 @@ let $photo    := doc($uri)/*
 let $lat      := $photo/geo:lat
 let $lng      := $photo/geo:long
 let $blackout := u:blackout($user, $photo/geo:lat, $photo/geo:long)
+
 return
   if (not($xml))
   then
@@ -275,6 +276,48 @@ return
                                    src="{$photo/npl:images/npl:square/npl:image}"/>
                             else
                               <a href="{$uri}?set={$set}">
+                                <img class="square {u:photo-visibility($photo)}"
+                                     src="{$photo/npl:images/npl:square/npl:image}"/>
+                              </a>
+                    }
+                  </div>
+              else
+                ()
+            }
+
+            { if (exists($tags))
+              then
+                let $tquery := for $tag in $tags
+                               return
+                                 cts:element-value-query(xs:QName("npl:tag"),
+                                                         $tag, ("exact"))
+                let $query  := cts:and-query($tquery)
+                let $images := for $photo in cts:search(/rdf:Description, $query)
+                               order by $photo/ExifIFD:CreateDate
+                               return string($photo/@rdf:about)
+                let $index  := index-of($images, string($photo/@rdf:about))
+                let $turi   := string-join(for $tag in $tags
+                                           return
+                                             concat("tag=", $tag),
+                                           "&amp;")
+                return
+                  <div class="otherphotos">
+                    <h3>Other photos tagged like this</h3>
+                    { for $pos in ($index - 2 to $index + 2)
+                      return
+                        if ($pos < 1 or empty($images[$pos]))
+                        then
+                          <img src="/blank-square.gif" alt="No photo"/>
+                        else
+                          let $uri   := $images[$pos]
+                          let $photo := doc(concat($uri, ".xml"))/*
+                          return
+                            if ($pos = $index)
+                            then
+                              <img class="square {u:photo-visibility($photo)} current"
+                                   src="{$photo/npl:images/npl:square/npl:image}"/>
+                            else
+                              <a href="{$uri}?{$turi}">
                                 <img class="square {u:photo-visibility($photo)}"
                                      src="{$photo/npl:images/npl:square/npl:image}"/>
                               </a>
