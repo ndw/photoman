@@ -153,6 +153,8 @@ return
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <title>photos.nwalsh.com: {$user}</title>
+    <meta name="viewport" content="width=device-width,initial-scale=1"/>
+    <link rel="stylesheet" type="text/css" href="/css/pure-min.css" />
     <link rel="stylesheet" type="text/css" href="/css/base.css" />
     <link rel="stylesheet" type="text/css" href="/css/user.css" />
     <link rel="icon" href="/favicon.png" type="image/png" />
@@ -169,19 +171,29 @@ return
     }
   </head>
   <body>
-    <div class="header">
-      { u:breadcrumbs($user) }
-      <h1>{u:user-title($user, u:admin())}
-      ({search:estimate(search:parse(concat("user:",$user), $u:search-options))}
-      photos)
-      </h1>
 
-      <div id="searchbox">
-        <form action="/images/{$user}" method="get">
-          <label for="q">Search</label>: <input type="input" name="q" size="50" width="128"/>
-          <input type="submit" value="Go"/>
-        </form>
-      </div>
+<div class="header">
+<div class="pure-g-r">
+  <div class="pure-u-2-5">
+      { u:breadcrumbs($user) }
+  </div>
+  <div class="pure-u-3-5">
+    <div id="searchbox">
+      <form action="/images/{$user}" method="get">
+        <label for="q">Search</label>
+        { "&#160;" }
+        <input type="input" name="q" size="30" width="128"/>
+        { "&#160;" }
+        <input type="submit" value="Go"/>
+      </form>
+    </div>
+  </div>
+</div>
+
+<h1>{u:user-title($user, u:admin())}
+({search:estimate(search:parse(concat("user:",$user), $u:search-options))}
+photos)
+</h1>
 
       { if (exists(u:user-description($user)))
         then
@@ -192,11 +204,26 @@ return
           ()
       }
 
-    </div>
+</div>
     <div class="content">
-    <table width="100%" border="0">
-      <tr>
-        <td valign="top" width="50%">
+<div class="pure-g-r">
+  <div class="pure-u-1-12">
+          <h3>Recent</h3>
+          { for $result in $search/search:result[1 to 21]
+            let $photo := doc($result/@uri)/*
+            return
+              (<a href="{$photo/@rdf:about}">
+                <img src="{$photo/npl:images/npl:square/npl:image}" alt="[T]"
+                     class="{if (u:photo-visibility($photo) = 'private')
+                             then 'uthumb private' else 'uthumb'}"
+                     title="{$photo/XMP-dc:Title}"/>
+              </a>
+              )
+          }
+          { "..." }
+  </div>
+  <div class="pure-u-5-12">
+
           <h3>Sets</h3>
           <dl>
             { let $setxml := doc(concat("/etc/", $user, "/sets.xml"))
@@ -224,33 +251,15 @@ return
                  if ($setxml/*/*) then f:show-sets($setxml/*/*) else ())
             }
           </dl>
-        </td>
-
-{(:
-        { let $taxonomy := doc(concat("/etc/", $user, "/taxonomy.xml"))/*
-          let $tags := cts:element-values($tagname, (), ("collation=http://marklogic.com/collation/codepoint"), $userq)
-          return
-            if (empty($tags))
-            then
-              <td width="25%" rowspan="2">&#160;</td>
-            else
-              <td valign="top" width="25%" rowspan="2">
-                <h3>Tags</h3>
-                <dl class="taxonomy">
-                  { f:show-taxonomy($taxonomy/*) }
-                </dl>
-              </td>
-        }
-:)}
-
-        <td valign="top" width="25%">
+  </div>
+  <div class="pure-u-1-4">
           <h3>Locations</h3>
           { u:show-locations($params, $search,
                              $search/search:facet[@name='location']/search:facet-value/@name)
           }
-        </td>
+  </div>
+  <div class="pure-u-1-4">
 
-        <td valign="top" width="25%">
           <h3>Dates</h3>
           <dl>
             { let $dates   := cts:element-values($datename, (), (), $userq)
@@ -297,89 +306,8 @@ return
                  </dd>)
             }
           </dl>
-        </td>
-        <td valign="top" width="70" rowspan="3">
-          <h3>Recent</h3>
-          { for $result in $search/search:result[1 to 40]
-            let $photo := doc($result/@uri)/*
-            return
-              (<a href="{$photo/@rdf:about}">
-                <img src="{$photo/npl:images/npl:square/npl:image}" alt="[T]"
-                     class="{if (u:photo-visibility($photo) = 'private')
-                             then 'uthumb private' else 'uthumb'}"
-                     title="{$photo/XMP-dc:Title}"/>
-              </a>,
-              <br/>)
-          }
-          { "..." }
-        </td>
-
-      </tr>
-
-{(:
-      <tr>
-        <td>&#160;</td>
-        <td colspan="2" valign="top">
-          <h3 style="margin-top: 1em;">Popular</h3>
-          <table>
-            <tr>
-              { for $value in $search/search:facet[@name="total"]/search:facet-value[1 to 5]
-                let $docs := cts:search(/rdf:Description,
-                                 cts:element-value-query(xs:QName("npl:total"), string($value)))
-                for $doc in $docs
-                return
-                  <td align="center">
-                    <a href="{$doc/@rdf:about}">
-                      <img src="{$doc/npl:images/npl:square/npl:image}" alt="[T]"
-                           class="uthumb"/>
-                    </a>
-                    <br/>
-                    ({$value})
-                  </td>
-              }
-            </tr>
-          </table>
-        </td>
-      </tr>
-:)}
-
-{(:
-      <tr>
-        <td colspan="3">
-          <h3>Tags</h3>
-          { let $taxonomy := doc(concat("/etc/", $user, "/taxonomy.xml"))/*
-            let $tags := cts:element-values($tagname, (), ("collation=http://marklogic.com/collation/codepoint"), $userq)
-            return
-              <div>{f:show-taxonomy-cloud($taxonomy/*)}</div>
-          }
-        </td>
-      </tr>
-:)}
-
-{(:
-      <tr>
-        <td>&#160;</td>
-        <td colspan="2">
-          { if (u:admin())
-            then
-              <div>
-                <h3>Stats</h3>
-                { let $uri := "/users/ndw"
-                  return
-                    xdmp:invoke("/stats.xqy",
-                       (QName("","uri"), $uri),
-                       <options xmlns="xdmp:eval">
-                         <database>{xdmp:database("photoman-audit")}</database>
-                       </options>)
-                }
-              </div>
-            else
-              ()
-          }
-        </td>
-      </tr>
-:)}
-    </table>
+  </div>
+</div>
     </div>
   </body>
 </html>

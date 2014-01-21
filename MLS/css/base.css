@@ -80,15 +80,15 @@ ul {
     list-style: none;
     padding-left: 0;
     margin-left: 0;
-    margin-before: 0px;
-    padding-before: 0px;
+    margin-top: 0px;
+    padding-top: 0px;
     -webkit-margin-before: 0px;
     -webkit-margin-after: 0px;
 }
 
 dl {
-    margin-before: 0px;
-    padding-before: 0px;
+    margin-top: 0px;
+    padding-top: 0px;
     font-size: 10pt;
     -webkit-margin-before: 0px;
     -webkit-margin-after: 0px;

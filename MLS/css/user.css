@@ -43,9 +43,9 @@ h3 {
 }
 
 #searchbox {
-    position: absolute;
-    top: 1em;
-    right: 1em;
+   text-align: right;
+   padding-right: 10px;
+   padding-top: 5px;
 }
 
 .uthumb {
