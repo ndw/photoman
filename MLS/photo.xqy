@@ -328,7 +328,7 @@ return
             }
 
             { if (u:admin()
-                  or exists($lat)
+                  or (exists($lat) and not($blackout))
                   or exists($photo/npl:city)
                   or exists($photo/npl:country))
               then
