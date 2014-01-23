@@ -41,27 +41,12 @@ function showMapGroup(pts) {
 }
 
 function showTrack(track) {
-    var ptll, line, ti, pts
-    var minlat, minlng, maxlat, maxlng
+    var ptll, line, ti
 
-    minlat = 360
-    minlng = 360
-    maxlat = -360
-    maxlng = -360
-
-    pts = track
-
-    ptll = new Array(pts.length)
-    for (i = 0; i < pts.length; i++) {
-        minlat = Math.min(pts[i].lat, minlat)
-        minlng = Math.min(pts[i].lng, minlng)
-        maxlat = Math.max(pts[i].lat, maxlat)
-        maxlng = Math.max(pts[i].lng, maxlng)
-
-        ptll[i] = L.latLng(pts[i].lat, pts[i].lng)
+    ptll = new Array(track.length)
+    for (i = 0; i < track.length; i++) {
+        ptll[i] = L.latLng(track[i].lat, track[i].lng)
     }
 
     line = L.polyline(ptll, {color: "red"}).addTo(map)
-
-    map.fitBounds([ [ minlat, minlng ], [ maxlat, maxlng ] ])
 }
