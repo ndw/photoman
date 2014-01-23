@@ -256,12 +256,13 @@ declare function utils:patch-uri2(
 
 declare function utils:patch-uri2(
   $base as xs:string,
-  $params as map:map,
+  $xparams as map:map,
   $name as xs:string?,
   $value as xs:string?,
   $repeat as xs:boolean
 ) as xs:string
 {
+  let $params := map:map(<x>{$xparams}</x>/*)
   let $_   := if (empty($name))
               then
                 ()
