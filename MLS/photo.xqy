@@ -255,7 +255,7 @@ return
               then
                 let $query  := cts:collection-query(concat($user, "/", $set))
                 let $images := for $photo in cts:search(/rdf:Description, $query)
-                               order by $photo/ExifIFD:CreateDate
+                               order by $photo/npl:datetime
                                return string($photo/@rdf:about)
                 let $index  := index-of($images, string($photo/@rdf:about))
                 return
@@ -293,7 +293,7 @@ return
                                                          $tag, ("exact"))
                 let $query  := cts:and-query($tquery)
                 let $images := for $photo in cts:search(/rdf:Description, $query)
-                               order by $photo/ExifIFD:CreateDate
+                               order by $photo/npl:datetime
                                return string($photo/@rdf:about)
                 let $index  := index-of($images, string($photo/@rdf:about))
                 let $turi   := string-join(for $tag in $tags
