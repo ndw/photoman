@@ -348,8 +348,7 @@ return
                   </h3>
                   { if (exists($lat) and (u:admin() or not($blackout)))
                     then
-                      <div id="map">
-                      </div>
+                      maps:map-body($user, $photo)
                     else
                       ()
                   }
