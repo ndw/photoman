@@ -33,11 +33,13 @@ die 'Incomplete configuration\n'
     unless (exists $config{'aws-access-key-id'}
             && exists $config{'aws-secret-access-key'}
             && exists $config{'photoman-bucket'}
-            && exists $config{'uri-root'} );
+            && exists $config{'uri-root'}
+            && exists $config{'posthost'} );
 
 my $uri_root = $config{'uri-root'};
 my $PHOTOMAN_BUCKET = $config{'photoman-bucket'};
 my $tmpfile = "/tmp/photoman.$$.jpg";
+my $posthost = $config{'posthost'};
 
 my $bucket = {};
 
@@ -211,7 +213,7 @@ sub post {
     my $username = undef;
     my $password = undef;
 
-    my $posturi  = "http://localhost:9071/upload.xqy?media=$type&uri=$uri";
+    my $posturi  = "http://$posthost/upload.xqy?media=$type&uri=$uri";
     $posturi .= "&collection=$collection" if defined($collection);
     $posturi .= "&skip=true" if defined($skip);
 
