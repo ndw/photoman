@@ -1,4 +1,16 @@
 <sets>
+  <set name="2013-12-turkeycreek"/>
+  <set name="2013-12-trailoflights"/>
+  <set name="2013-11-greenbelt"/>
+  <set name="2013-10-xmlamsterdam"/>
+  <set name="2013-10-houghton"/>
+  <set name="2013-09-xmlss"/>
+  <set name="2013-09-edinburgh"/>
+  <set name="balisage-2013"/>
+  <set name="2013-xslt-nyc"/>
+  <set name="2013-upstate-ny"/>
+  <set name="edible-austin-sipping-social-2013"/>
+  <set name="2013-05-tzmaps"/>
   <set name="2013-04-westcave-preserve"/>
   <set name="2013-04-hiking-utah">
     <set name="2013-04-zmr"/>
