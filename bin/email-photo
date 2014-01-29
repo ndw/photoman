@@ -43,7 +43,8 @@ abort("Wrong number of parts?")
 my $part1 = $entity->parts(0);
 my $part2 = $entity->parts(1);
 
-if ($part1->mime_type() eq 'multipart/alternative') {
+if ($part1->mime_type() eq 'multipart/alternative'
+    || $part1->mime_type() eq 'text/plain') {
     abort("No image part, or wrong type")
         unless $part2->mime_type() eq 'image/jpeg';
     process($entity, $part1, $part2);
@@ -80,12 +81,16 @@ sub process {
     $exif->SetNewValue('Title', $subject);
 
     my $txtpart = undef;
-    foreach my $part ($altpart->parts()) {
-        if ($part->mime_type() eq 'text/plain') {
-            abort("Multiple plain parts?")
-                if defined($txtpart);
-            $txtpart = $part;
+    if (scalar($altpart->parts()) > 0) {
+        foreach my $part ($altpart->parts()) {
+            if ($part->mime_type() eq 'text/plain') {
+                abort("Multiple plain parts?")
+                    if defined($txtpart);
+                $txtpart = $part;
+            }
         }
+    } else {
+        $txtpart = $altpart if $altpart->mime_type() eq 'text/plain';
     }
 
     abort("No plain part?") unless defined($txtpart);
