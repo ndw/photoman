@@ -27,6 +27,375 @@ declare default function namespace "http://www.w3.org/2005/xpath-functions";
 
 declare option xdmp:mapping "false";
 
+declare function local:credits(
+  $user as xs:string,
+  $photo as element(rdf:Description)
+)
+{
+  <div class="credit">
+    <h3>Credits</h3>
+    <p>
+      { "Taken by ", u:user-title($photo/npl:user) }
+      { let $date := xs:date($photo/npl:date)
+        where exists($date)
+        return
+          (" on ",
+           <a href="/dates/{$photo/npl:user}/{$date}"
+              class="date" title="{$date}">
+             { format-date($date, "[D01] [MNn,*-3] [Y0001]") }
+           </a>)
+      }
+      { if (exists($photo/IFD0:Model))
+        then
+          concat(" with a ", $photo/IFD0:Model[1], ".")
+        else
+          "."
+      }
+    </p>
+  </div>
+};
+
+declare function local:visibility(
+  $user as xs:string,
+  $photo as element(rdf:Description)
+)
+{
+  if (u:admin())
+  then
+    let $visibility := u:photo-visibility($photo)
+    return
+      <div class="visible">
+        <h3>Visibility</h3>
+        <form>
+          <input type="hidden" id="uri" name="uri"
+                 value="{$photo/@rdf:about}"/>
+          <select name="visible" id="visible">
+            <option value="public">
+              { if ($visibility = "public")
+                then attribute { fn:QName("","selected") }
+                               { "selected" }
+                else ()
+              }
+              { "Public" }
+            </option>
+            <option value="friends">Friends</option>
+            <option value="family">Family</option>
+            <option value="private">
+              { if ($visibility = "private")
+                then attribute { fn:QName("","selected") }
+                               { "selected" }
+                else ()
+              }
+              { "Private" }
+            </option>
+          </select>
+        </form>
+      </div>
+    else
+      ()
+};
+
+declare function local:other-set-photos(
+  $user as xs:string,
+  $photo as element(rdf:Description),
+  $set as xs:string?
+)
+{
+  if (exists($set))
+  then
+    let $query  := cts:collection-query(concat($user, "/", $set))
+    let $images := for $photo in cts:search(/rdf:Description, $query)
+                   order by $photo/npl:datetime
+                   return string($photo/@rdf:about)
+    let $index  := index-of($images, string($photo/@rdf:about))
+    return
+      <div class="otherphotos">
+        <h3>Other photos in this set</h3>
+        { for $pos in ($index - 2 to $index + 2)
+          return
+            if ($pos < 1 or empty($images[$pos]))
+            then
+              <img src="/blank-square.gif" alt="No photo"/>
+            else
+              let $uri   := $images[$pos]
+              let $photo := doc(concat($uri, ".xml"))/*
+              return
+                if ($pos = $index)
+                then
+                  <img class="square {u:photo-visibility($photo)} current"
+                       src="{$photo/npl:images/npl:square/npl:image}"/>
+                else
+                  <a href="{$uri}?set={$set}">
+                    <img class="square {u:photo-visibility($photo)}"
+                         src="{$photo/npl:images/npl:square/npl:image}"/>
+                  </a>
+        }
+      </div>
+    else
+      ()
+};
+
+declare function local:other-tag-photos(
+  $user as xs:string,
+  $photo as element(rdf:Description),
+  $tags as xs:string*
+)
+{
+  if (exists($tags))
+  then
+    let $tquery := for $tag in $tags
+                   return
+                     cts:element-value-query(xs:QName("npl:tag"),
+                                             $tag, ("exact"))
+    let $query  := cts:and-query($tquery)
+    let $images := for $photo in cts:search(/rdf:Description, $query)
+                   order by $photo/npl:datetime
+                   return string($photo/@rdf:about)
+    let $index  := index-of($images, string($photo/@rdf:about))
+    let $turi   := string-join(for $tag in $tags
+                               return
+                                 concat("tag=", $tag),
+                               "&amp;")
+    return
+      <div class="otherphotos">
+        <h3>Other photos tagged like this</h3>
+        { for $pos in ($index - 2 to $index + 2)
+          return
+            if ($pos < 1 or empty($images[$pos]))
+            then
+              <img src="/blank-square.gif" alt="No photo"/>
+            else
+              let $uri   := $images[$pos]
+              let $photo := doc(concat($uri, ".xml"))/*
+              return
+                if ($pos = $index)
+                then
+                  <img class="square {u:photo-visibility($photo)} current"
+                       src="{$photo/npl:images/npl:square/npl:image}"/>
+                else
+                  <a href="{$uri}?{$turi}">
+                    <img class="square {u:photo-visibility($photo)}"
+                         src="{$photo/npl:images/npl:square/npl:image}"/>
+                  </a>
+        }
+      </div>
+  else
+    ()
+};
+
+declare function local:location(
+  $user as xs:string,
+  $photo as element(rdf:Description)
+)
+{
+  let $lat      := $photo/geo:lat
+  let $lng      := $photo/geo:long
+  let $blackout := u:blackout($user, $photo/geo:lat, $photo/geo:long)
+  return
+    if (u:admin()
+        or (exists($lat) and not($blackout))
+        or exists($photo/npl:city)
+        or exists($photo/npl:country))
+    then
+      <div class="geo">
+        <h3>
+          { "Location" }
+          { if (exists($lat) and u:admin())
+            then
+              (" ",
+               <a href="/ajax/del-geo?uri={xdmp:node-uri($photo)}">X</a>)
+            else
+              ()
+          }
+          { if (u:admin() and $blackout)
+            then " (blacked out)"
+            else ""
+          }
+        </h3>
+        { if (exists($lat) and (u:admin() or not($blackout)))
+          then
+            maps:map-body($user, $photo)
+          else
+            ()
+        }
+        { if (u:admin())
+          then
+            let $parts := tokenize($photo/npl:location, '\|')
+            return
+              <form action="/ajax/set-location" method="post">
+                <input type="hidden" name="uri"
+                       value="{xdmp:node-uri($photo)}"/>
+                <input name="city" value="{$parts[3]}"
+                       placeholder="city" size="16"/>,
+                <input name="province" value="{$parts[2]}"
+                       placeholder="state/province" size="16"/>,
+                <input name="country" value="{$parts[1]}"
+                       placeholder="ctry" size="2"/>
+                <input type="submit" value="Set"/>
+              </form>
+          else
+            <div>
+              { string(($photo/npl:city,
+                        $photo/npl:province,
+                        $photo/npl:country)[1]) }
+            </div>
+        }
+      </div>
+    else
+      ()
+};
+
+declare function local:sets(
+  $user as xs:string,
+  $photo as element(rdf:Description)
+)
+{
+  if (count(xdmp:document-get-collections(xdmp:node-uri($photo))) > 0)
+  then
+    <div class="sets">
+      <h3>Sets</h3>
+      <ul>
+        { for $set in xdmp:document-get-collections(xdmp:node-uri($photo))
+          return
+            <li>
+              <a href="/sets/{$set}">
+                { u:set-title($photo/npl:user, $set, false()) }
+              </a>
+            </li>
+        }
+      </ul>
+    </div>
+  else
+    ()
+};
+
+declare function local:tags(
+  $user as xs:string,
+  $photo as element(rdf:Description),
+  $params as map:map
+)
+{
+  if ($photo/npl:tag or u:admin())
+  then
+    <div class="tags">
+      <h3>Tags</h3>
+      <ul>
+        { for $tag in $photo/npl:tag order by $tag
+          return
+            <li id="tag-{$tag}" class="tag {$tag/@class}">
+              <a href="{u:patch-uri2($params, 'tag', $tag, true())}">
+                {string($tag)}
+              </a>
+              { if (u:admin() and not($tag/@class = 'tax'))
+                then
+                  ("&#160;", <a class="deltag" href="#">&#x2717;</a>)
+                else
+                  ()
+              }
+            </li>
+        }
+        { if (u:admin())
+          then
+            <li>
+              <input type="hidden" id="add-tag-uri" value="{xdmp:node-uri($photo)}"/>
+              <span id="add-tag" class="editable">
+                <i>add tag</i>
+              </span>
+            </li>
+          else
+            ()
+        }
+      </ul>
+    </div>
+  else
+    ()
+};
+
+declare function local:exif(
+  $user as xs:string,
+  $photo as element(rdf:Description)
+)
+{
+  let $blackout := u:blackout($user, $photo/geo:lat, $photo/geo:long)
+  return
+    if (exists($photo/composite:ShutterSpeed))
+    then
+      <div class="exif">
+        <h3>EXIF</h3>
+        <ul>
+          <li>{string($photo/IFD0:Model)}</li>
+          { if ($photo/composite:LensID)
+            then
+              <li>
+                { string($photo/composite:LensID) }
+              </li>
+            else
+              ()
+          }
+          <li>
+            { string($photo/composite:FocalLength35efl) }
+          </li>
+          <li>
+            { concat($photo/composite:ShutterSpeed,
+                     "s at f/",
+                     $photo/composite:Aperture)
+            }
+          </li>
+          { if ($photo/composite:DOF)
+            then
+              <li>
+                { concat("Depth of field: ",
+                         $photo/composite:DOF)
+                }
+              </li>
+            else
+              ()
+          }
+          { if ($photo/composite:GPSPosition and $photo/geo:lat
+                and (u:admin() or not($blackout)))
+            then
+              <li>
+                { concat("GPS: ",
+                         $photo/composite:GPSPosition)
+                }
+              </li>
+            else
+              ()
+          }
+        </ul>
+      </div>
+    else
+      ()
+};
+
+declare function local:license(
+  $user as xs:string,
+  $photo as element(rdf:Description),
+  $size as xs:string
+)
+{
+  if ($size = "large")
+  then
+    <div class="license-large">
+      <h3>License</h3>
+      <p>
+        This work is licensed under a
+        <a rel="license" href="http://creativecommons.org/licenses/by-nc/3.0/">Creative
+        Commons Attribution-NonCommercial 3.0 Unported License</a>.
+      </p>
+      <p>To negotiate other terms or for prints, please contact
+         <a href="mailto:ndw@nwalsh.com">Norm</a> for details.</p>
+    </div>
+  else
+    <div class="license">
+      <p>
+        This work is licensed under a
+        <a rel="license" href="http://creativecommons.org/licenses/by-nc/3.0/">Creative
+        Commons Attribution-NonCommercial 3.0 Unported License</a>.
+      </p>
+    </div>
+};
+
 let $params   := rest:process-request(endpoints:request("/photo.xqy"))
 let $uri      := map:get($params, "uri")
 let $xml      := map:get($params, "xml")
@@ -81,450 +450,144 @@ return
             ()
         }
       </head>
+
       <body>
-        <div class="header pure-g-r">
-          <div class="pure-u-1">
-            <div class="breadcrumbs">
-              <a href="/">photos.nwalsh.com</a>
-              { " | " }
-              <a href="/users/{$user}">{$user}</a>
-            </div>
+        <div class="header">
+          <div class="breadcrumbs">
+            <a href="/">photos.nwalsh.com</a>
+            { " | " }
+            <a href="/users/{$user}">{$user}</a>
+          </div>
 
-            <h1>
-              {
-                let $title := string($photo/XMP-dc:Title)
-                return
-                  if (u:admin())
-                  then
-                    (<input xmlns="http://www.w3.org/1999/xhtml"
-                            type="hidden" id="photo-title-uri"
-                            value="{xdmp:node-uri($photo)}"/>,
-                     <span xmlns="http://www.w3.org/1999/xhtml"
-                           id="photo-title" class="editable">
-                       { $title }
-                     </span>)
-                   else
-                     $title
-              }
-            </h1>
-
-            { if (exists($country) or exists($province) or exists($city))
-              then
-                <div>Location:
-                  { ($city, $province, $country)[1] }
-                </div>
-              else
-                ()
-            }
+        <div class="metadata pure-g-r">
+          <div class="pure-u-1-2">
+            { " " }
+          </div>
+          <div class="pure-u-1-2">
+            { local:other-tag-photos($user, $photo, $tags) }
+            { local:other-set-photos($user, $photo, $set) }
           </div>
         </div>
-        <div class="pure-g-r">
-          <div class="photo pure-u-3-5">
-            <div class="image">
-              { if ($size = "large")
+
+          <h1>
+            {
+              let $title := string($photo/XMP-dc:Title)
+              return
+                if (u:admin())
                 then
-                  <img class="{u:photo-visibility($photo)}"
-                       src="{$photo/npl:images/npl:large/npl:image}"/>
-                else
-                  <a href="{$photo/@rdf:about}/large{
-                    if (exists($set)) then concat('?set=',$set) else ''}">
-                    <img class="{u:photo-visibility($photo)}"
-                         src="{$photo/npl:images/npl:small/npl:image}"/>
-                  </a>
-              }
-            </div>
-
-            <div class="caption">
-              {
-                let $caption := string($photo/npl:caption)
-                let $jeanne  := string($photo/npl:jeanne)
-                return
-                  if (u:admin())
-                  then
-                    <div xmlns="http://www.w3.org/1999/xhtml">
-                      <div>
-                        <input type="hidden" id="photo-caption-uri"
-                               value="{xdmp:node-uri($photo)}"/>
-                        <span id="photo-caption" class="editable">
-                          { if ($caption = "")
-                            then
-                              "/caption/"
-                            else
-                              $caption
-                          }
-                        </span>
-                      </div>
-                      <div>
-                        <input type="hidden" id="photo-jeanne-uri"
-                               value="{xdmp:node-uri($photo)}"/>
-                        <span id="photo-jeanne" class="editable">
-                          { if ($jeanne = "")
-                            then
-                              "/jeanne/"
-                            else
-                              $jeanne
-                          }
-                        </span>
-                      </div>
-                    </div>
-                  else
-                    <div>
-                      { if ($caption = "")
-                        then ()
-                        else
-                          <div>
-                            { $caption }
-                          </div>
-                      }
-                      { if ($jeanne = "")
-                        then ()
-                        else
-                          <div>
-                            { concat("“", $jeanne, "”") }
-                            { "—Jeanne Chauvin" }
-                          </div>
-                      }
-                    </div>
-              }
-            </div>
-
-          </div>
-
-          <div class="pure-u-2-5">
-          <div class="sidebar">
-            <div class="credit">
-              <h3>Credits</h3>
-              <p>
-                { "Taken by ", u:user-title($photo/npl:user) }
-                { let $date := xs:date($photo/npl:date)
-                  where exists($date)
-                  return
-                    (" on ",
-                     <a href="/dates/{$photo/npl:user}/{$date}" class="date" title="{$date}">
-                       { format-date($date, "[D01] [MNn,*-3] [Y0001]") }
-                     </a>)
-                }
-                { if (exists($photo/IFD0:Model))
-                  then
-                    concat(" with a ", $photo/IFD0:Model[1], ".")
-                  else
-                    "."
-                }
-              </p>
-            </div>
-
-{(:
-            <div class="views">
-              <div>Viewed {u:views($photo)} times.</div>
-            </div>
-:)}
-
-            { if (u:admin())
-              then
-                let $visibility := u:photo-visibility($photo)
-                return
-                  <div class="visible">
-                    <h3>Visibility</h3>
-                    <form>
-                      <input type="hidden" id="uri" name="uri" value="{$photo/@rdf:about}"/>
-                      <select name="visible" id="visible">
-                        <option value="public">
-                          { if ($visibility = "public")
-                            then attribute { fn:QName("","selected") } { "selected" }
-                            else ()
-                          }
-                          { "Public" }
-                        </option>
-                        <option value="friends">Friends</option>
-                        <option value="family">Family</option>
-                        <option value="private">
-                          { if ($visibility = "private")
-                            then attribute { fn:QName("","selected") } { "selected" }
-                            else ()
-                          }
-                          { "Private" }
-                        </option>
-                      </select>
-                    </form>
-                  </div>
-              else
-                ()
+                  (<input xmlns="http://www.w3.org/1999/xhtml"
+                          type="hidden" id="photo-title-uri"
+                          value="{xdmp:node-uri($photo)}"/>,
+                   <span xmlns="http://www.w3.org/1999/xhtml"
+                         id="photo-title" class="editable">
+                     { $title }
+                   </span>)
+                 else
+                   $title
             }
+          </h1>
 
-            { if (exists($set))
-              then
-                let $query  := cts:collection-query(concat($user, "/", $set))
-                let $images := for $photo in cts:search(/rdf:Description, $query)
-                               order by $photo/npl:datetime
-                               return string($photo/@rdf:about)
-                let $index  := index-of($images, string($photo/@rdf:about))
-                return
-                  <div class="otherphotos">
-                    <h3>Other photos in this set</h3>
-                    { for $pos in ($index - 2 to $index + 2)
-                      return
-                        if ($pos < 1 or empty($images[$pos]))
-                        then
-                          <img src="/blank-square.gif" alt="No photo"/>
-                        else
-                          let $uri   := $images[$pos]
-                          let $photo := doc(concat($uri, ".xml"))/*
-                          return
-                            if ($pos = $index)
-                            then
-                              <img class="square {u:photo-visibility($photo)} current"
-                                   src="{$photo/npl:images/npl:square/npl:image}"/>
-                            else
-                              <a href="{$uri}?set={$set}">
-                                <img class="square {u:photo-visibility($photo)}"
-                                     src="{$photo/npl:images/npl:square/npl:image}"/>
-                              </a>
-                    }
-                  </div>
-              else
-                ()
-            }
+          { if (exists($country) or exists($province) or exists($city))
+            then
+              <div>Location:
+                { ($city, $province, $country)[1] }
+              </div>
+            else
+              ()
+          }
+        </div>
 
-            { if (exists($tags))
-              then
-                let $tquery := for $tag in $tags
-                               return
-                                 cts:element-value-query(xs:QName("npl:tag"),
-                                                         $tag, ("exact"))
-                let $query  := cts:and-query($tquery)
-                let $images := for $photo in cts:search(/rdf:Description, $query)
-                               order by $photo/npl:datetime
-                               return string($photo/@rdf:about)
-                let $index  := index-of($images, string($photo/@rdf:about))
-                let $turi   := string-join(for $tag in $tags
-                                           return
-                                             concat("tag=", $tag),
-                                           "&amp;")
-                return
-                  <div class="otherphotos">
-                    <h3>Other photos tagged like this</h3>
-                    { for $pos in ($index - 2 to $index + 2)
-                      return
-                        if ($pos < 1 or empty($images[$pos]))
-                        then
-                          <img src="/blank-square.gif" alt="No photo"/>
-                        else
-                          let $uri   := $images[$pos]
-                          let $photo := doc(concat($uri, ".xml"))/*
-                          return
-                            if ($pos = $index)
-                            then
-                              <img class="square {u:photo-visibility($photo)} current"
-                                   src="{$photo/npl:images/npl:square/npl:image}"/>
-                            else
-                              <a href="{$uri}?{$turi}">
-                                <img class="square {u:photo-visibility($photo)}"
-                                     src="{$photo/npl:images/npl:square/npl:image}"/>
-                              </a>
-                    }
-                  </div>
-              else
-                ()
-            }
-
-            { if (u:admin()
-                  or (exists($lat) and not($blackout))
-                  or exists($photo/npl:city)
-                  or exists($photo/npl:country))
-              then
-                <div class="geo">
-                  <h3>
-                    { "Location" }
-                    { if (exists($lat) and u:admin())
-                      then
-                        (" ", <a href="/ajax/del-geo?uri={xdmp:node-uri($photo)}">X</a>)
-                      else
-                        ()
-                    }
-                    { if (u:admin() and $blackout)
-                      then " (blacked out)"
-                      else ""
-                    }
-                  </h3>
-                  { if (exists($lat) and (u:admin() or not($blackout)))
-                    then
-                      maps:map-body($user, $photo)
-                    else
-                      ()
-                  }
-                  { if (u:admin())
-                    then
-                      let $parts := tokenize($photo/npl:location, '\|')
-                      return
-                        <form action="/ajax/set-location" method="post">
-                          <input type="hidden" name="uri" value="{xdmp:node-uri($photo)}"/>
-                          <input name="city" value="{$parts[3]}"
-                                 placeholder="city" size="16"/>,
-                          <input name="province" value="{$parts[2]}"
-                                 placeholder="state/province" size="16"/>,
-                          <input name="country" value="{$parts[1]}"
-                                 placeholder="ctry" size="2"/>
-                          <input type="submit" value="Set"/>
-                        </form>
-                    else
-                      <div>
-                        { string(($photo/npl:city, $photo/npl:province, $photo/npl:country)[1]) }
-                      </div>
-                  }
-                </div>
-              else
-                ()
-            }
-
-            { if (count(xdmp:document-get-collections(xdmp:node-uri($photo))) > 0)
-              then
-                <div class="sets">
-                  <h3>Sets</h3>
-                  <ul>
-                    { for $set in xdmp:document-get-collections(xdmp:node-uri($photo))
-                      return
-                        <li>
-                          <a href="/sets/{$set}">
-                            { u:set-title($photo/npl:user, $set, false()) }
-                          </a>
-                        </li>
-                    }
-                  </ul>
-                </div>
-              else
-                ()
-            }
-
-            { if ($photo/npl:tag or u:admin())
-              then
-                <div class="tags">
-                  <h3>Tags</h3>
-                  <ul>
-                    { for $tag in $photo/npl:tag order by $tag
-                      return
-                        <li id="tag-{$tag}" class="tag {$tag/@class}">
-                          <a href="{u:patch-uri2($params, 'tag', $tag, true())}">
-                            {string($tag)}
-                          </a>
-                          { if (u:admin() and not($tag/@class = 'tax'))
-                            then
-                              ("&#160;", <a class="deltag" href="#">&#x2717;</a>)
-                            else
-                              ()
-                          }
-                        </li>
-                    }
-                    { if (u:admin())
-                      then
-                        <li>
-                          <input type="hidden" id="add-tag-uri" value="{xdmp:node-uri($photo)}"/>
-                          <span id="add-tag" class="editable">
-                            <i>add tag</i>
-                          </span>
-                        </li>
-                      else
-                        ()
-                    }
-                  </ul>
-                </div>
-              else
-                ()
-            }
-
-            { if (exists($photo/composite:ShutterSpeed))
-              then
-                <div class="exif">
-                  <h3>EXIF</h3>
-                  <ul>
-                    <li>{string($photo/IFD0:Model)}</li>
-                    { if ($photo/composite:LensID)
-                      then
-                        <li>
-                          { string($photo/composite:LensID) }
-                        </li>
-                      else
-                        ()
-                    }
-                    <li>
-                      { string($photo/composite:FocalLength35efl) }
-                    </li>
-                    <li>
-                      { concat($photo/composite:ShutterSpeed,
-                               "s at f/",
-                               $photo/composite:Aperture)
-                      }
-                    </li>
-                    { if ($photo/composite:DOF)
-                      then
-                        <li>
-                          { concat("Depth of field: ",
-                                   $photo/composite:DOF)
-                          }
-                        </li>
-                      else
-                        ()
-                    }
-                    { if ($photo/composite:GPSPosition and $photo/geo:lat
-                          and (u:admin() or not($blackout)))
-                      then
-                        <li>
-                          { concat("GPS: ",
-                                   $photo/composite:GPSPosition)
-                          }
-                        </li>
-                      else
-                        ()
-                    }
-                  </ul>
-                </div>
-              else
-                ()
-            }
-
+        <div class="photo">
+          <div class="image">
             { if ($size = "large")
               then
-                <div class="license-large">
-                  <h3>License</h3>
-                  <p>
-                    This work is licensed under a
-                    <a rel="license" href="http://creativecommons.org/licenses/by-nc/3.0/">Creative
-                    Commons Attribution-NonCommercial 3.0 Unported License</a>.
-                  </p>
-                  <p>To negotiate other terms or for prints, please contact
-                     <a href="mailto:ndw@nwalsh.com">Norm</a> for details.</p>
-                </div>
+                <img class="{u:photo-visibility($photo)}"
+                     src="{$photo/npl:images/npl:large/npl:image}"/>
               else
-                <div class="license">
-                  <p>
-                    This work is licensed under a
-                    <a rel="license" href="http://creativecommons.org/licenses/by-nc/3.0/">Creative
-                    Commons Attribution-NonCommercial 3.0 Unported License</a>.
-                  </p>
-                </div>
+                <a href="{$photo/@rdf:about}/large{
+                  if (exists($set)) then concat('?set=',$set) else ''}">
+                  <img class="{u:photo-visibility($photo)}"
+                       src="{$photo/npl:images/npl:large/npl:image}"/>
+                </a>
             }
+          </div>
 
-{(:
-            { if (u:admin())
-              then
-                <div>
-                  <h3>Stats</h3>
-                  { let $uri := substring-before($uri, ".xml")
-                    return
-                      xdmp:invoke("/stats.xqy",
-                         (QName("","uri"), $uri),
-                         <options xmlns="xdmp:eval">
-                           <database>{xdmp:database("photoman-audit")}</database>
-                         </options>)
-                  }
-                </div>
-              else
-                ()
+          <div class="caption">
+            {
+              let $caption := string($photo/npl:caption)
+              let $jeanne  := string($photo/npl:jeanne)
+              return
+                if (u:admin())
+                then
+                  <div xmlns="http://www.w3.org/1999/xhtml">
+                    <div>
+                      <input type="hidden" id="photo-caption-uri"
+                             value="{xdmp:node-uri($photo)}"/>
+                      <span id="photo-caption" class="editable">
+                        { if ($caption = "")
+                          then
+                            "/caption/"
+                          else
+                            $caption
+                        }
+                      </span>
+                    </div>
+                    <div>
+                      <input type="hidden" id="photo-jeanne-uri"
+                             value="{xdmp:node-uri($photo)}"/>
+                      <span id="photo-jeanne" class="editable">
+                        { if ($jeanne = "")
+                          then
+                            "/jeanne/"
+                          else
+                            $jeanne
+                        }
+                      </span>
+                    </div>
+                  </div>
+                else
+                  <div>
+                    { if ($caption = "")
+                      then ()
+                      else
+                        <div>
+                          { $caption }
+                        </div>
+                    }
+                    { if ($jeanne = "")
+                      then ()
+                      else
+                        <div>
+                          { concat("“", $jeanne, "”") }
+                          { "—Jeanne Chauvin" }
+                        </div>
+                    }
+                  </div>
             }
-:)}
-
           </div>
         </div>
-      </div>
+
+        <div class="metadata pure-g-r">
+          <div class="pure-u-1-2">
+            <div class="sidebar">
+              { local:visibility($user, $photo) }
+              { local:tags($user, $photo, $params) }
+              { local:exif($user, $photo) }
+            </div>
+          </div>
+          <div class="pure-u-1-2">
+            <div class="sidebar">
+              { local:location($user, $photo) }
+              { local:sets($user, $photo) }
+              { local:credits($user, $photo) }
+            </div>
+          </div>
+          <div class="pure-u-1">
+            <div class="sidebar">
+              { local:license($user, $photo, $size) }
+            </div>
+          </div>
+        </div>
 
         { if (exists($lat) and (u:admin() or not($blackout)))
           then

@@ -9,15 +9,18 @@
 }
 
 .photo img {
-    border-width: 8px;
-    border-style: solid;
-    border-color: white;
-    border-radius: 4px;
-    box-shadow: 5px 5px 10px #222222;
+   border-width: 8px;
+   border-style: solid;
+   border-color: white;
+   border-radius: 4px;
+   box-shadow: 5px 5px 10px #222222;
+   width: 100%;
+   max-width: 1024px;
 }
 
 .photo .image {
    padding-left: 2em;
+   padding-right: 3em;
 }
 
 .photo .caption {
@@ -41,6 +44,11 @@ img.current {
     border-style: solid;
     border-color: black;
     margin-right: 4px;
+}
+
+.metadata {
+   border-top: 1px solid white;
+   margin-top: 1em;
 }
 
 .sidebar {
