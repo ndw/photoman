@@ -273,7 +273,7 @@ declare function utils:patch-uri2(
                   let $othervalues := for $v in $values
                                       where string($v) != $value return $v
                   let $newvalue := if ($repeat)
-                                   then if (not($value = $values))
+                                   then if (not($value = $othervalues))
                                         then ($othervalues, $value)
                                         else $othervalues
                                    else if ($value = string($values))
@@ -633,7 +633,8 @@ declare function utils:next-row(
   let $next := utils:find($photos, $current, $MAXWIDTH - $width)
   return
     if (empty($photos))
-    then $current
+    then
+      $current
     else
       if (empty($current))
       then
