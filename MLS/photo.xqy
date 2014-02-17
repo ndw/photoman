@@ -460,10 +460,10 @@ return
           </div>
 
           <div class="pure-g-r">
-            <div class="pure-hidden-phone pure-u-1-2">
+            <div class="pure-hidden-phone pure-hidden-tablet pure-u-1-2">
               { " " }
             </div>
-            <div class="pure-hidden-phone pure-u-1-2">
+            <div class="pure-hidden-phone pure-hidden-tablet pure-u-1-2">
               { local:other-tag-photos($user, $photo, $tags) }
               { local:other-set-photos($user, $photo, $set) }
             </div>
@@ -567,21 +567,39 @@ return
           </div>
         </div>
 
-        <div class="metadata pure-g-r">
-          <div class="pure-u-1-2">
-            <div class="sidebar">
-              { local:visibility($user, $photo) }
-              { local:tags($user, $photo, $params) }
-              { local:exif($user, $photo) }
+        <div class="metadata">
+          <div class="pure-g-r">
+            <div class="pure-u-1-2">
+              <div class="sidebar">
+                { local:visibility($user, $photo) }
+                { local:tags($user, $photo, $params) }
+                { local:exif($user, $photo) }
+              </div>
+            </div>
+            <div class="pure-u-1-2">
+              <div class="sidebar">
+                { local:location($user, $photo) }
+                { local:sets($user, $photo) }
+                { local:credits($user, $photo) }
+              </div>
             </div>
           </div>
-          <div class="pure-u-1-2">
+        </div>
+
+        <div class="pure-g-r">
+          <div class="pure-hidden-desktop pure-u-1-2">
             <div class="sidebar">
-              { local:location($user, $photo) }
-              { local:sets($user, $photo) }
-              { local:credits($user, $photo) }
+              { local:other-tag-photos($user, $photo, $tags) }
             </div>
           </div>
+          <div class="pure-hidden-desktop pure-u-1-2">
+            <div class="sidebar">
+              { local:other-set-photos($user, $photo, $set) }
+            </div>
+          </div>
+        </div>
+
+        <div class="pure-g-r">
           <div class="pure-u-1">
             <div class="sidebar">
               { local:license($user, $photo, $size) }
