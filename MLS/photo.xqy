@@ -459,15 +459,15 @@ return
             <a href="/users/{$user}">{$user}</a>
           </div>
 
-        <div class="metadata pure-g-r">
-          <div class="pure-u-1-2">
-            { " " }
+          <div class="pure-g-r">
+            <div class="pure-hidden-phone pure-u-1-2">
+              { " " }
+            </div>
+            <div class="pure-hidden-phone pure-u-1-2">
+              { local:other-tag-photos($user, $photo, $tags) }
+              { local:other-set-photos($user, $photo, $set) }
+            </div>
           </div>
-          <div class="pure-u-1-2">
-            { local:other-tag-photos($user, $photo, $tags) }
-            { local:other-set-photos($user, $photo, $set) }
-          </div>
-        </div>
 
           <h1>
             {
