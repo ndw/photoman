@@ -178,8 +178,17 @@ let $trace    := if (contains($agent, "Googlebot")) then ()
                  else xdmp:log(concat("photos q: ", $q, " (", $agent, ")"))
 let $start    := (($page - 1) * $u:photos-per-page) + 1
 let $search   := search:search($q, $u:search-options,$start)
-let $photos   := for $photo in $search/search:result
-                 return doc($photo/@uri)/*
+
+(: For full-text queries, order by relevance; otherwise by URI ~= date :)
+let $photos   := if (empty($textq))
+                 then
+                   for $photo in $search/search:result
+                   order by $photo/@uri
+                   return doc($photo/@uri)/*
+                 else
+                   for $photo in $search/search:result
+                   return doc($photo/@uri)/*
+
 return
   if (not($xml))
   then
