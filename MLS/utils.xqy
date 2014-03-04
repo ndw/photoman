@@ -54,6 +54,15 @@ declare variable $utils:search-options
            <element ns="http://nwalsh.com/ns/photolib" name="date"/>
          </range>
        </constraint>
+       <constraint name="recent">
+         <range type="xs:date" facet="true">
+           <element ns="http://nwalsh.com/ns/photolib" name="date"/>
+           <computed-bucket name="today"   ge="P0D"    lt="P1D" anchor="start-of-day"/>
+           <computed-bucket name="7-days"  ge="-P7D"   lt="P1D" anchor="start-of-day"/>
+           <computed-bucket name="14-days"  ge="-P14D" lt="P1D" anchor="start-of-day"/>
+           <computed-bucket name="30-days" ge="-P30D"  lt="P1D" anchor="start-of-day"/>
+         </range>
+       </constraint>
        <constraint name="total">
          <range type="xs:int" facet="true">
            <element ns="http://nwalsh.com/ns/photolib" name="total"/>
