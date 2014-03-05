@@ -262,6 +262,10 @@ declare variable $endpoints:ENDPOINTS as element(rest:options)
        <request uri="^/upload-track.xqy$" endpoint="/upload-track.xqy" user-params="forbid">
          <http method="POST"/>
        </request>
+
+       <request uri="^/atom$" endpoint="/atom.xqy" user-params="forbid">
+         <http method="GET"/>
+       </request>
      </options>;
 
 declare private variable $endpoints:ok
