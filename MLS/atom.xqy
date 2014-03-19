@@ -42,6 +42,7 @@ return
       let $name  := replace($uri, "^.*/([^/]+)", "$1")
       let $uri   := concat("http://photos.nwalsh.com", $uri)
       let $title := string($photo/XMP-dc:Title)
+      order by $photo/npl:datetime descending
       return
         <entry>
           <title>{$title}</title>
