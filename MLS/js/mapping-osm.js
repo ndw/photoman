@@ -4,8 +4,10 @@ var cloudmadeApiKey = "5cc7d716065c41b3af78634e7f69be48"
 
 function setupMap() {
     map = L.map('map')
-    L.tileLayer('http://{s}.tile.cloudmade.com/'+cloudmadeApiKey+'/997/256/{z}/{x}/{y}.png', {
-	attribution: 'Map &copy; <a href="http://openstreetmap.org">OSM</a>, <a href="http://creativecommons.org/licenses/by-sa/2.0/">CC-BY-SA</a>, Imagery © <a href="http://cloudmade.com">CloudMade</a>'
+    L.tileLayer('http://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+        attribution: 'map data © OpenStreetMap contributors',
+        minZoom: 1,
+        MaxZoom: 18
     }).addTo(map);
 }
 
