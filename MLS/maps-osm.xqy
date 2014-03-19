@@ -28,12 +28,18 @@ declare function maps:head-elements(
 
 declare function maps:map-body(
   $user as xs:string,
-  $photos as element()+
+  $photos as element()*
 ) as element()*
 {
-  let $stamps  := for $f in $photos/npl:datetime return xs:dateTime($f)
-  let $dtstart := xs:dateTime(string(min($stamps)) || "Z")
-  let $dtend   := xs:dateTime(string(max($stamps)) || "Z")
+  (: Stamps aren't supposed to have a timezone, but some do... :)
+  let $stamps  := for $f in $photos/npl:datetime
+                  let $dt := xs:dateTime($f)
+                  return
+                    if (empty(timezone-from-dateTime($dt)))
+                    then xs:dateTime(string($dt) || "Z")
+                    else $dt
+  let $dtstart := min($stamps)
+  let $dtend   := max($stamps)
 
   let $_dts    := xs:QName("npl:dtstart")
   let $_dte    := xs:QName("npl:dtend")
@@ -61,9 +67,11 @@ declare function maps:map-body(
   let $tracks  := cts:search(collection("/gpx/trk"), $q)/*
 
   let $pts := for $photo in $photos
+              let $title := replace($photo/XMP-dc:Title, '"', "")
+              let $title := replace($title, '\\', "") (: " :)
               return concat('{"lat": ', $photo/geo:lat,
                             ',"lng": ', $photo/geo:long,
-                            ',"title": "', $photo/XMP-dc:Title, '"',
+                            ',"title": "', $title, '"',
                             ',"uri": "', $photo/@rdf:about, '"',
                             ',"square": "', $photo/npl:images/npl:square/npl:image, '"',
                             '}')
@@ -71,7 +79,7 @@ declare function maps:map-body(
     (<div id="map" xmlns="http://www.w3.org/1999/xhtml"></div>,
      <script type="text/javascript" xmlns="http://www.w3.org/1999/xhtml">
        $(document).ready(function() {{
-                           showMapGroup([{string-join($pts,",")}]);
+                           showMapGroup([{string-join($pts,",&#10;")}]);
                            { for $trk in $tracks
                              let $pts := for $pt in $trk/gpx:trkseg/gpx:trkpt
                                          return
