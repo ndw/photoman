@@ -211,6 +211,13 @@ declare function local:location(
             then " (blacked out)"
             else ""
           }
+
+          { if (exists($lat) and exists($lng) and (u:admin() or not($blackout)))
+            then
+              (" ", <a href="/map/{$user}?lat={$lat}&amp;lng={$lng}">map</a>)
+            else
+              ()
+          }
         </h3>
         { if (exists($lat) and (u:admin() or not($blackout)))
           then

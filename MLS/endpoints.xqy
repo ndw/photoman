@@ -263,8 +263,13 @@ declare variable $endpoints:ENDPOINTS as element(rest:options)
          <http method="POST"/>
        </request>
 
-       <request uri="^/atom$" endpoint="/atom.xqy" user-params="forbid">
-         <http method="GET"/>
+       <request uri="^/atom$" endpoint="/atom.xqy" user-params="forbid"/>
+
+       <request uri="^/map/([^/]+)$" endpoint="/map.xqy" user-params="forbid">
+         <uri-param name="userid">$1</uri-param>
+         <param name="lat" as="float" required="true"/>
+         <param name="lng" as="float" required="true"/>
+         <param name="res" as="integer"/>
        </request>
      </options>;
 
