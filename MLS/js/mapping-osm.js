@@ -50,5 +50,6 @@ function showTrack(track) {
         ptll[i] = L.latLng(track[i].lat, track[i].lng)
     }
 
+    map.fitBounds(ptll)
     line = L.polyline(ptll, {color: "red"}).addTo(map)
 }
