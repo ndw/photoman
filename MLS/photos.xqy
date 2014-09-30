@@ -174,8 +174,10 @@ let $textq    := map:get($params, "q")
 let $q        := u:compose($params)
 let $q        := if ($textq) then concat($textq, " ", $q) else $q
 let $agent    := xdmp:get-request-header("User-Agent", "")
+(:
 let $trace    := if (contains($agent, "Googlebot")) then ()
                  else xdmp:log(concat("photos q: ", $q, " (", $agent, ")"))
+:)
 let $start    := (($page - 1) * $u:photos-per-page) + 1
 let $search   := search:search($q, $u:search-options,$start)
 
