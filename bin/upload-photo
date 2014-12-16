@@ -38,7 +38,6 @@ die 'Incomplete configuration\n'
 
 my $uri_root = $config{'uri-root'};
 my $PHOTOMAN_BUCKET = $config{'photoman-bucket'};
-my $tmpfile = "/tmp/photoman.$$.jpg";
 my $posthost = $config{'posthost'};
 
 my $bucket = {};
@@ -68,6 +67,22 @@ if (!$DEBUG) {
 die "You must specify at least one image.\n" unless @ARGV;
 
 for my $image (@ARGV) {
+    my $ext = undef;
+    my $contentType = undef;
+
+    if ($image =~ /^.*\.jpe?g$/) {
+        $ext = "jpg";
+        $contentType = "image/jpeg";
+    } elsif ($image =~ /^.*\.gif$/) {
+        $ext = "gif";
+        $contentType = "image/gif";
+    } else {
+        warn "Cannot handle image: $image\n";
+        next;
+    }
+
+    my $tmpfile = "/tmp/photoman.$$.$ext";
+
     my $exif = new Image::ExifTool;
     $exif->Options(IgnoreMinorErrors => '1');
     $exif->ExtractInfo($image);
@@ -154,7 +169,7 @@ for my $image (@ARGV) {
                 system "convert $crop$rot -geometry ${newwidth}x${newheight} \"$image\" \"$tmpfile\""
                     unless $DEBUG;
                 print "\tUpload: $s3path\n";
-                $rc = upload($s3path, $tmpfile, "image/jpeg");
+                $rc = upload($s3path, $tmpfile, $contentType);
                 die unless $rc;
             }
         }
@@ -165,6 +180,7 @@ for my $image (@ARGV) {
         unless $DEBUG;
     my $s3path = $path . "/" . $filename;
     $s3path =~ s/\.jpg$/\.xml/;
+    $s3path =~ s/\.gif$/\.xml/;
     print "\tUpload: $s3path\n";
 
     open (F, $tmpfile);
