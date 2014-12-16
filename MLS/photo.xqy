@@ -514,7 +514,7 @@ return
                 <a href="{$photo/@rdf:about}/large{
                   if (exists($set)) then concat('?set=',$set) else ''}">
                   <img class="{u:photo-visibility($photo)}"
-                       src="{$photo/npl:images/npl:large/npl:image}"/>
+                       src="{$photo/npl:images/npl:small/npl:image}"/>
                 </a>
             }
           </div>
