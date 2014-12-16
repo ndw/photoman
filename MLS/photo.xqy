@@ -487,7 +487,7 @@ return
                           value="{xdmp:node-uri($photo)}"/>,
                    <span xmlns="http://www.w3.org/1999/xhtml"
                          id="photo-title" class="editable">
-                     { $title }
+                     { concat($title, "&#160;") }
                    </span>)
                  else
                    $title
