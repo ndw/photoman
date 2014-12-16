@@ -28,6 +28,9 @@ declare namespace rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#";
 
 declare option xdmp:mapping "false";
 
+declare variable $DATETIMERE := "(20[12][0-9][01][0-9][0-3][0-9]).?([0-2][0-9][0-5][0-9][0-5][0-9])";
+declare variable $DATERE := "(20[12][0-9][01][0-9][0-3][0-9])";
+
 declare variable $tax := doc("/etc/taxonomy.xml")/*;
 
 declare variable $params := rest:process-request(endpoints:request("/upload.xqy"));
@@ -117,11 +120,36 @@ declare function f:classify(
         <npl:tag class="tax">{$tag}</npl:tag>
 };
 
+declare function f:guessDate(
+  $fn as xs:string?
+) as xs:string?
+{
+  if (empty($fn))
+  then ()
+  else
+    if (matches($fn, $DATETIMERE))
+    then
+       let $date := replace($fn, concat("^.*",$DATETIMERE,".*$") , "$1$2")
+       return
+         concat(substring($date, 1, 4), ":", substring($date, 5, 2), ":", substring($date, 7, 2), " ",
+                substring($date, 9, 2), ":", substring($date,11, 2), ":", substring($date,13, 2), "Z")
+    else
+      if (matches($fn, $DATERE))
+      then
+         let $date := replace($fn, concat("^.*",$DATERE,".*$") , "$1$2")
+         return
+           concat(substring($date, 1, 4), ":", substring($date, 5, 2), ":", substring($date, 7, 2), " ",
+                  "12:00:00Z")
+      else
+        ()
+};
+
 if (not(u:admin()))
 then
   xdmp:set-response-code(401, "Denied")
 else
-if (doc-available($uri) and (ends-with($uri, ".jpg") or $skip))
+if (doc-available($uri)
+    and (ends-with($uri, ".jpg") or ends-with($uri, ".gif") or $skip))
 then
   (: not actually quite right :)
   xdmp:set-response-code(302, "Document exists")
@@ -136,7 +164,9 @@ else
         (xdmp:document-insert($uri, xdmp:external-binary($file), $permissions, $coll),
          concat("Photo ", $baseuri))
     else
-      let $fn    := replace($uri, "^/images/(.*)\.xml$", "$1.jpg")
+      let $fn    := if (ends-with($uri, ".jpg"))
+                    then replace($uri, "^/images/(.*)\.xml$", "$1.jpg")
+                    else replace($uri, "^/images/(.*)\.xml$", "$1.gif")
       let $user  := substring-before($fn, "/")
       let $rdfD  := $body/rdf:RDF/rdf:Description
       let $ns    := for $ns in $rdfD/namespace::*
@@ -154,8 +184,13 @@ else
                      { let $date := ($rdfD/ExifIFD:DateTimeOriginal,
                                      $rdfD/IFD0:ModifyDate,
                                      $rdfD/XMP-xmp:ModifyDate,
-                                     $rdfD/XMP-xmp:MetadataDate,
-                                     $rdfD/System:FileModifyDate)[1]
+                                     $rdfD/XMP-xmp:MetadataDate)[1]
+                       let $date := if (empty($date))
+                                    then f:guessDate($rdfD/System:FileName)
+                                    else $date
+                       let $date := if (empty($date))
+                                    then $rdfD/System:FileModifyDate
+                                    else $date
                        where exists($date)
                        return
                          let $exifdt := string($date)
