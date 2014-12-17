@@ -169,14 +169,21 @@ for my $image (@ARGV) {
 
         print "\tScale:  ($width,$height)$rot => ($newwidth,$newheight)\n";
 
+        my $exists = defined($bucket->get_key($s3path));
+
         if ($DEBUG) {
             print "$convert\n";
         } else {
-            system $convert;
+            system $convert unless ($exists || $REPLACE);
         }
-        print "\tUpload: $s3path\n";
-        $rc = upload($s3path, $tmpfile, $contentType);
-        die unless $rc;
+
+        if ($exists && !$REPLACE) {
+            print "\t\tSkipping upload, key exists\n";
+        } else {
+            print "\tUpload: $s3path\n";
+            $rc = upload($s3path, $tmpfile, $contentType);
+            die unless $rc;
+        }
     }
 
     print "\tExtract EXIF metadata\n";

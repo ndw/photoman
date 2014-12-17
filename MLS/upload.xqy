@@ -13,6 +13,7 @@ declare default function namespace "http://www.w3.org/2005/xpath-functions";
 
 declare namespace ExifIFD="http://ns.exiftool.ca/EXIF/ExifIFD/1.0/";
 declare namespace File="http://ns.exiftool.ca/File/1.0/";
+declare namespace GIF="http://ns.exiftool.ca/GIF/GIF/1.0/";
 declare namespace GPS="http://ns.exiftool.ca/EXIF/GPS/1.0/";
 declare namespace IFD0="http://ns.exiftool.ca/EXIF/IFD0/1.0/";
 declare namespace IPTC="http://ns.exiftool.ca/IPTC/IPTC/1.0/";
@@ -148,8 +149,7 @@ if (not(u:admin()))
 then
   xdmp:set-response-code(401, "Denied")
 else
-if (doc-available($uri)
-    and (ends-with($uri, ".jpg") or ends-with($uri, ".gif") or $skip))
+if (doc-available($uri) and $skip)
 then
   (: not actually quite right :)
   xdmp:set-response-code(302, "Document exists")
@@ -174,8 +174,8 @@ else
                            and string($ns) != "http://ns.exiftool.ca/Photoshop/Photoshop/1.0/")
                     return
                       $ns
-      let $width  := xs:integer($rdfD/File:ImageWidth)
-      let $height := xs:integer($rdfD/File:ImageHeight)
+      let $width  := xs:integer(($rdfD/File:ImageWidth, $rdfD/GIF:ImageWidth)[1])
+      let $height := xs:integer(($rdfD/File:ImageHeight, $rdfD/GIF:ImageHeight)[1])
       let $desc := <rdf:Description rdf:about="{$baseuri}"
                                     xmlns:npl="http://nwalsh.com/ns/photolib">
                      { $ns }
