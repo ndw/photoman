@@ -159,20 +159,24 @@ for my $image (@ARGV) {
 
         my $s3path = $sizes{$size}->{'path'} . "/" . $filename;
 
+        my $convert = "convert $crop$rot -geometry ${newwidth}x${newheight} \"$image\" \"$tmpfile\"";
+
+        if ($contentType eq 'image/gif') {
+            # this might be an animated gif and they need to be cropped
+            # with special ImageMagick options
+            $convert = "convert \"$image\" -coalesce -repage 0x0 $crop$rot +repage -geometry ${newwidth}x${newheight} \"$tmpfile\"";
+        }
+
         print "\tScale:  ($width,$height)$rot => ($newwidth,$newheight)\n";
 
         if ($DEBUG) {
-            print "\tUpload: $s3path\n";
+            print "$convert\n";
         } else {
-            my $exists = $bucket->get_key($s3path);
-            if (!defined($exists)) {
-                system "convert $crop$rot -geometry ${newwidth}x${newheight} \"$image\" \"$tmpfile\""
-                    unless $DEBUG;
-                print "\tUpload: $s3path\n";
-                $rc = upload($s3path, $tmpfile, $contentType);
-                die unless $rc;
-            }
+            system $convert;
         }
+        print "\tUpload: $s3path\n";
+        $rc = upload($s3path, $tmpfile, $contentType);
+        die unless $rc;
     }
 
     print "\tExtract EXIF metadata\n";
