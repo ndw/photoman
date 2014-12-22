@@ -105,7 +105,8 @@ for my $image (@ARGV) {
 
     print "$image\n";
 
-    die "You meant to include the path, surely?\n" unless $image =~ /\/?(.*?)\/([^\/]+)$/;
+    die "You meant to include the path, surely?\n"
+        unless $image =~ /\/?(.*?)\/([^\/]+)$/;
 
     my $path = "$uri_root/$1";
     my $filename = $2;
@@ -157,6 +158,11 @@ for my $image (@ARGV) {
             }
         }
 
+        if ($newwidth > $width || $newheight > $height) {
+            $newwidth = $width;
+            $newheight = $height;
+        }
+
         my $s3path = $sizes{$size}->{'path'} . "/" . $filename;
 
         my $convert = "convert $crop$rot -geometry ${newwidth}x${newheight} \"$image\" \"$tmpfile\"";
@@ -169,12 +175,12 @@ for my $image (@ARGV) {
 
         print "\tScale:  ($width,$height)$rot => ($newwidth,$newheight)\n";
 
-        my $exists = defined($bucket->get_key($s3path));
+        my $exists = $DEBUG || defined($bucket->get_key($s3path));
 
         if ($DEBUG) {
-            print "$convert\n";
+            # print "$convert\n";
         } else {
-            system $convert unless ($exists || $REPLACE);
+            system $convert unless ($exists && !$REPLACE);
         }
 
         if ($exists && !$REPLACE) {
@@ -213,14 +219,12 @@ sub upload {
 
     return 1 if $DEBUG;
 
-    if (!$REPLACE) {
-        my $exists = $bucket->get_key($key);
-        if (defined($exists)) {
-            warn "\t\tSkipping upload, key exists\n";
-            return 1;
-        }
-    }
+    my $exists = $bucket->get_key($key);
 
+    if ($exists && !$REPLACE) {
+        warn "\t\tSkipping upload, key exists\n";
+        return 1;
+    }
 
     return $bucket->add_key_filename($key, $tmpfile,
                                      { 'content_type' => $contentType,
