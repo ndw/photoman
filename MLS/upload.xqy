@@ -164,9 +164,9 @@ else
         (xdmp:document-insert($uri, xdmp:external-binary($file), $permissions, $coll),
          concat("Photo ", $baseuri))
     else
-      let $fn    := if (ends-with($uri, ".jpg"))
-                    then replace($uri, "^/images/(.*)\.xml$", "$1.jpg")
-                    else replace($uri, "^/images/(.*)\.xml$", "$1.gif")
+      let $fn    := if ($body/GIF:*)
+                    then replace($uri, "^/images/(.*)\.xml$", "$1.gif")
+                    else replace($uri, "^/images/(.*)\.xml$", "$1.jpg")
       let $user  := substring-before($fn, "/")
       let $rdfD  := $body/rdf:RDF/rdf:Description
       let $ns    := for $ns in $rdfD/namespace::*
