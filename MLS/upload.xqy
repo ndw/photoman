@@ -164,7 +164,7 @@ else
         (xdmp:document-insert($uri, xdmp:external-binary($file), $permissions, $coll),
          concat("Photo ", $baseuri))
     else
-      let $fn    := if ($body/GIF:*)
+      let $fn    := if ($body//GIF:*)
                     then replace($uri, "^/images/(.*)\.xml$", "$1.gif")
                     else replace($uri, "^/images/(.*)\.xml$", "$1.jpg")
       let $user  := substring-before($fn, "/")
