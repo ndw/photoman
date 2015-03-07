@@ -49,12 +49,16 @@ return
           <link rel="alternate" type="text/html" href="{$uri}"/>
           <id>{$uri}</id>
           {(: Z is a lie :)}
-          <published>{string($photo/npl:datetime)}Z</published>
-          <updated>{string($photo/npl:datetime)}Z</updated>
+          { let $dt := xs:dateTime($photo/npl:datetime)
+            let $dz := adjust-dateTime-to-timezone($dt, xs:dayTimeDuration("PT0H"))
+            return
+              (<published>{string($dz)}</published>,
+               <updated>{string($dz)}</updated>)
+          }
           <aex:kind>photos.nwalsh.com photo</aex:kind>
           <summary type="xhtml">
             <div xmlns="http://www.w3.org/1999/xhtml">
-              <img src="http://images.nwalsh.com{$path}150/{$name}.jpg"
+              <img src="{$photo/npl:images/npl:thumb/npl:image}"
                    class="thumbnail" alt="{$title}"/>
               { $title }
             </div>
