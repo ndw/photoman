@@ -185,7 +185,7 @@ let $search   := search:search($q, $u:search-options,$start)
 let $photos   := if (empty($textq))
                  then
                    for $photo in $search/search:result
-                   order by $photo/@uri
+                   order by $photo/@uri descending
                    return doc($photo/@uri)/*
                  else
                    for $photo in $search/search:result

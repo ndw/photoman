@@ -905,7 +905,7 @@ declare function utils:compose(
   let $city    := utils:compose-term("city", map:get($params, "city"))
   let $date    := utils:compose-date-term(map:get($params, "start-date"), map:get($params, "end-date"))
   return
-    string-join(($user, $tag, $set, $country, $state, $city, $date, "sort:date"), " ")
+    string-join(($user, $tag, $set, $country, $state, $city, $date, "sort:rdate"), " ")
 };
 
 declare private function utils:compose-term(
