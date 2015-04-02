@@ -55,7 +55,7 @@ return
         <h1>Track on {$date}</h1>
       </div>
       <div class="content">
-        { maps:track($tracks) }
+        { maps:track($user, $tracks) }
       </div>
     </body>
   </html>

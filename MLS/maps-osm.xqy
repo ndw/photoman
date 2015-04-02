@@ -2,6 +2,9 @@ xquery version "1.0-ml";
 
 module namespace maps="http://nwalsh.com/ns/photomap";
 
+import module namespace u="http://nwalsh.com/ns/modules/utils"
+       at "utils.xqy";
+
 declare default function namespace "http://www.w3.org/2005/xpath-functions";
 
 declare namespace geo="http://www.w3.org/2003/01/geo/wgs84_pos#";
@@ -82,6 +85,9 @@ declare function maps:map-body(
                            showMapGroup([{string-join($pts,",&#10;")}]);
                            { for $trk in $tracks
                              let $pts := for $pt in $trk/gpx:trkseg/gpx:trkpt
+                                         let $lat := xs:float($pt/@lat)
+                                         let $lon := xs:float($pt/@lon)
+                                         where not(u:blackout($user,$lat,$lon))
                                          return
                                            concat('{"lat": ', $pt/@lat,
                                                   ',"lng": ', $pt/@lon, '}')
@@ -93,11 +99,15 @@ declare function maps:map-body(
 };
 
 declare function maps:track(
+  $user as xs:string,
   $tracks as element(gpx:trk)*
 )
 {
   let $polylines := for $trk in $tracks
                     let $pts := for $pt in $trk/gpx:trkseg/gpx:trkpt
+                                let $lat := xs:float($pt/@lat)
+                                let $lon := xs:float($pt/@lon)
+                                where not(u:blackout($user,$lat,$lon))
                                 return
                                   concat('{"lat": ', $pt/@lat,
                                          ',"lng": ', $pt/@lon, '}')
@@ -110,6 +120,9 @@ declare function maps:track(
                            setupMap();
                            { for $trk in $tracks
                              let $pts := for $pt in $trk/gpx:trkseg/gpx:trkpt
+                                         let $lat := xs:float($pt/@lat)
+                                         let $lon := xs:float($pt/@lon)
+                                         where not(u:blackout($user,$lat,$lon))
                                          return
                                            concat('{"lat": ', $pt/@lat,
                                                   ',"lng": ', $pt/@lon, '}')
