@@ -196,7 +196,7 @@ for my $image (@ARGV) {
     system("exiftool -X $image > $tmpfile")
         unless $DEBUG;
     my $s3path = $path . "/" . $filename;
-    $s3path =~ s/\.jpg$/\.xml/;
+    $s3path =~ s/\.jpe?g$/\.xml/;
     $s3path =~ s/\.gif$/\.xml/;
     print "\tUpload: $s3path\n";
 
