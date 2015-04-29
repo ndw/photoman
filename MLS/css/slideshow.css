@@ -1,0 +1,77 @@
+/* slideshow */
+.slider1_container {
+   position: relative;
+   margin: 0 auto;
+   top: 0px;
+   left: 0px;
+   width: 600px;
+   height: 300px;
+}
+
+.slider1_wrapper1 {
+   position: relative;
+   left: 50%;
+   width: 5000px;
+   text-align: center;
+   margin-left: -2500px;
+}
+
+.slider1_wrapper2 {
+   position: relative;
+   width: 100%;
+   overflow: hidden;
+}
+
+.loading {
+   position: absolute;
+   top: 0px;
+   left: 0px;
+}
+
+.loading_1 {
+   filter: alpha(opacity=70);
+   opacity:0.7;
+   position: absolute;
+   display: block;
+   background-color: #000;
+   top: 0px;
+   left: 0px;
+   width: 100%;
+   height:100%;
+}
+
+.loading_2 {
+   position: absolute;
+   display: block;
+   background: url(/img/loading.gif) no-repeat center center;
+   top: 0px;
+   left: 0px;
+   width: 100%;
+   height:100%;
+}
+
+.slides1 {
+   cursor: move;
+   position: absolute;
+   left: 0px;
+   top: 0px;
+   width: 600px;
+   height: 300px;
+   overflow: hidden;
+}
+
+/* Arrows */
+
+.al,.ar {display:block;position:absolute;width:55px;height:55px;cursor:pointer;background:url(/img/a15.png) center center no-repeat;overflow:hidden}
+
+.al{background-position:-3px -33px}
+
+.ar{background-position:-63px -33px}
+
+.al:hover{background-position:-123px -33px}
+
+.ar:hover{background-position:-183px -33px}
+
+.al.aldn{background-position:-243px -33px}
+
+.ar.ardn{background-position:-303px -33px}

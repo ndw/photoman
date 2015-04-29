@@ -171,7 +171,12 @@ let $province := map:get($params, "province")
 let $city     := map:get($params, "city")
 let $xml      := map:get($params, "xml")
 let $textq    := map:get($params, "q")
-let $q        := u:compose($params)
+
+let $sort     := if (empty($set) and exists($tags))
+                 then "sort:rdate"
+                 else "sort:fdate"
+
+let $q        := u:compose($params, $sort)
 let $q        := if ($textq) then concat($textq, " ", $q) else $q
 let $agent    := xdmp:get-request-header("User-Agent", "")
 (:
@@ -181,16 +186,8 @@ let $trace    := if (contains($agent, "Googlebot")) then ()
 let $start    := (($page - 1) * $u:photos-per-page) + 1
 let $search   := search:search($q, $u:search-options,$start)
 
-(: For full-text queries, order by relevance; otherwise by URI ~= date :)
-let $photos   := if (empty($textq))
-                 then
-                   for $photo in $search/search:result
-                   order by $photo/@uri descending
-                   return doc($photo/@uri)/*
-                 else
-                   for $photo in $search/search:result
-                   return doc($photo/@uri)/*
-
+let $photos   := for $photo in $search/search:result
+                 return doc($photo/@uri)/*
 return
   if (not($xml))
   then
@@ -262,6 +259,13 @@ return
             { f:page-navigation($search) }
           </div>
           <div class="sidebar">
+            { if (exists($set))
+              then
+                <p><a href="/slideshow/{$user}/{$set}">Slideshow</a></p>
+              else
+                ()
+            }
+
             { f:page-navigation($search),
 
                  let $geo := for $photo in $photos[geo:lat]

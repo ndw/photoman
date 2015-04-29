@@ -102,6 +102,19 @@ declare variable $endpoints:ENDPOINTS as element(rest:options)
          <param name="xml" values="rdf|docbook"/>
        </request>
 
+       <request uri="^/slideshow/([^/]+)/(.+)$"
+                endpoint="/slideshow.xqy" user-params="forbid">
+         <uri-param name="userid">$1</uri-param>
+         <uri-param name="set">$2</uri-param>
+         <param name="city" required="false"/>
+         <param name="country" required="false"/>
+         <param name="end-date" required="false"/>
+         <param name="province" alias="state" required="false"/>
+         <param name="start-date" alias="date" required="false"/>
+         <param name="tag" required="false" repeatable="true"/>
+         <param name="xml" values="rdf|docbook"/>
+       </request>
+
        <request uri="^/tags/([^/]+)/(.+)$"
                 endpoint="/photos.xqy" user-params="forbid">
          <uri-param name="userid">$1</uri-param>

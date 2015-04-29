@@ -19,7 +19,9 @@ return
   then
     concat("/redirect.xqy?uri=", $uri)
   else
-    if (starts-with($uri, "/js/") or starts-with($uri, "/css/"))
+    if (starts-with($uri, "/js/")
+        or starts-with($uri, "/css/")
+        or starts-with($uri, "/img/"))
     then
       $uri
     else
