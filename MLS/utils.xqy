@@ -124,6 +124,11 @@ declare variable $utils:search-options
              <element ns="http://ns.exiftool.ca/EXIF/ExifIFD/1.0/" name="CreateDate"/>
            </sort-order>
          </state>
+         <state name="fdate">
+           <sort-order direction="ascending" type="xs:dateTime">
+             <element ns="http://nwalsh.com/ns/photolib" name="datetime"/>
+           </sort-order>
+         </state>
          <state name="rdate">
            <sort-order direction="descending" type="xs:dateTime">
              <element ns="http://nwalsh.com/ns/photolib" name="datetime"/>
@@ -874,7 +879,8 @@ declare private function utils:patch-uri(
 };
 
 declare function utils:compose(
-  $params as map:map
+  $params as map:map,
+  $sort as xs:string
 ) as xs:string
 {
   let $user     := utils:compose-term("user", map:get($params, "userid"))
@@ -905,7 +911,7 @@ declare function utils:compose(
   let $city    := utils:compose-term("city", map:get($params, "city"))
   let $date    := utils:compose-date-term(map:get($params, "start-date"), map:get($params, "end-date"))
   return
-    string-join(($user, $tag, $set, $country, $state, $city, $date, "sort:rdate"), " ")
+    string-join(($user, $tag, $set, $country, $state, $city, $date, $sort), " ")
 };
 
 declare private function utils:compose-term(
