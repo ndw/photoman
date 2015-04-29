@@ -165,6 +165,7 @@ sub process {
 
     my $fn = $imgbody->path();
     $fn =~ s/^.*(\/[^\/]+)$/$1/;
+    $fn =~ s/\.jpeg$/\.jpg/;
     $fn = $dir . $fn;
 
     report("cp " . $imgbody->path() . " $fn");
